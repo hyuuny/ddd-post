@@ -1,4 +1,4 @@
-package com.setge.dddpost.commons.config;
+package com.setge.dddpost.global.config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,30 +8,35 @@ import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.mediatype.collectionjson.CollectionJsonLinkDiscoverer;
 import org.springframework.plugin.core.SimplePluginRegistry;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-@EnableWebMvc
+//@EnableWebMvc
 @Configuration
 @EnableSwagger2
-public class SwaggerConfig implements WebMvcConfigurer {
+public class SwaggerConfig {
 
-  @Override
-  public void addResourceHandlers(ResourceHandlerRegistry registry) {
-    registry.addResourceHandler("swagger-ui.html")
-        .addResourceLocations("classpath:/META-INF/resources/");
-    registry.addResourceHandler("/webjars/**")
-        .addResourceLocations("classpath:/META-INF/resources/webjars/");
-  }
+//  @Override
+//  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//    registry.addResourceHandler("swagger-ui.html")
+//        .addResourceLocations("classpath:/META-INF/resources/");
+//
+//    registry.addResourceHandler("/webjars/**")
+//        .addResourceLocations("classpath:/META-INF/resources/webjars/");
+//  }
 
 
   @Bean
-  public Docker api() {
+  public Docket api() {
     return new Docket(DocumentationType.SWAGGER_2)
         .select()
-        .apis(RequestHandlerSelectors.basePackage("com.setge.dddpost"))
-//                .paths(PathSelectors.ant("/api/**"))
+        .apis(RequestHandlerSelectors.any())
+//        .paths(PathSelectors.ant("/api/**"))
         .paths(PathSelectors.any())
         .build()
         .apiInfo(apiInfo());
@@ -46,9 +51,9 @@ public class SwaggerConfig implements WebMvcConfigurer {
 
   private ApiInfo apiInfo() {
     return new ApiInfoBuilder()
-        .title("주문시스템 Rest Api")
+        .title("Post Rest Api")
         .description("API 상세소개 및 사용법")
-        .version("2.9.2")
+        .version("1.0")
         .build();
   }
 

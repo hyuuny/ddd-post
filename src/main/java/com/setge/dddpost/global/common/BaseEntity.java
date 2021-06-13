@@ -1,4 +1,4 @@
-package com.setge.dddpost.commons.domain;
+package com.setge.dddpost.global.common;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

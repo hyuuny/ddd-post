@@ -34,12 +34,11 @@ dependencies {
     compile("org.springframework.plugin:spring-plugin-core:1.2.0.RELEASE")
 
     // swagger
-    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
-    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '3.0.0'
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: '3.0.0'
 
     // QueryDsl
-    compile group: 'com.querydsl', name: 'querydsl-jpa', version: '4.3.0'
-    compile group: 'com.querydsl', name: 'querydsl-apt', version: '4.3.0'
+    implementation 'com.querydsl:querydsl-jpa'
 
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
 
