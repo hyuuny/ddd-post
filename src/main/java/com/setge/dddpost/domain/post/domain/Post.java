@@ -75,7 +75,7 @@ public class Post extends BaseEntity {
   }
 
   public String toType() {
-    return type.getTitle();
+    return type.toString();
   }
 
 

@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.hateoas.server.core.Relation;
 
 public class PostDto {
@@ -65,6 +66,7 @@ public class PostDto {
   }
 
   @Getter
+  @Builder
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @ApiModel(value = "게시물 수정")
@@ -176,6 +178,36 @@ public class PostDto {
       this.createdAt = entity.getCreatedAt();
       this.lastModifiedAt = entity.getLastModifiedAt();
     }
+
+    public Response(PostSearchDto entity) {
+      this.id = entity.getId();
+      this.type = entity.getType();
+      this.title = entity.getTitle();
+      this.content = entity.getContent();
+      this.nickname = entity.getNickname();
+      this.recommend = entity.isRecommend();
+      this.postImages = entity.getPostImages();
+      this.createdAt = entity.getCreatedAt();
+      this.lastModifiedAt = entity.getLastModifiedAt();
+    }
+  }
+
+  @Setter
+  @Getter
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  @ApiModel(value = "게시물 상세검색조건")
+  public static class DetailedSearchCondition {
+
+    @ApiModelProperty(value = "검색 옵션", example = "email", required = false, position = 1)
+    private String searchOption;
+
+    @ApiModelProperty(value = "검색 키워드", example = "웃긴", required = false, position = 2)
+    private String keyword;
+
+    @ApiModelProperty(value = "베스트리뷰", example = "true", required = false, position = 3)
+    private Boolean recommend;
 
   }
 
