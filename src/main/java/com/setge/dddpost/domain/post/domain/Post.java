@@ -14,6 +14,7 @@ import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class Post extends BaseEntity {
 
   private boolean recommend;
 
+  @Default
   @OneToMany(mappedBy = "post", cascade = ALL, fetch = LAZY, orphanRemoval = true)
   private List<PostImage> postImages = Lists.newArrayList();
 

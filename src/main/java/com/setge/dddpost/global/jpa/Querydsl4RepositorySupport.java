@@ -5,11 +5,6 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +18,14 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Repository
-public class Querydsl4RepositorySupport {
+public abstract class Querydsl4RepositorySupport {
 
   private final Class domainClass;
   private Querydsl querydsl;
@@ -69,11 +70,11 @@ public class Querydsl4RepositorySupport {
     return entityManager;
   }
 
-  protected JPAQuery select(Expression expression) {
+  protected JPAQuery select(Expression expression) { // 식을 가져온다.
     return getQueryFactory().select(expression);
   }
 
-  protected JPAQuery selectForm(EntityPath from) {
+  protected JPAQuery selectForm(EntityPath from) { // 경로에서 QueryFactory를 가져온다.
     return getQueryFactory().select(from);
   }
 
@@ -112,6 +113,5 @@ public class Querydsl4RepositorySupport {
     List<T> content = getQuerydsl().applyPagination(pageable, jpaQuery).fetch();
     return PageableExecutionUtils.getPage(content, pageable, jpaQuery::fetchCount);
   }
-
 
 }

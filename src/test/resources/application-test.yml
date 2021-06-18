@@ -1,0 +1,14 @@
+spring:
+  output:
+    ansi:
+      enabled: always
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.setge.dddpost: debug
+    org.springframework: info

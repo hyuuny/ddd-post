@@ -78,11 +78,11 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public Page<Response> retrievePost(DetailedSearchCondition searchCondition, Pageable pageable) {
-    Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
+    Page<Post> search = postQueryRepository.search(searchCondition, pageable);
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
   }
 
-  public List<Response> toResponses(Page<PostSearchDto> searchDtos) {
+  public List<Response> toResponses(Page<Post> searchDtos) {
     return searchDtos.getContent().stream()
         .map(Response::new)
         .collect(Collectors.toList());

@@ -57,7 +57,7 @@ public class PostDto {
           .nickname(this.nickname)
           .build();
 
-      postImages.stream()
+      this.postImages.stream()
           .map(PostImageDto.Create::toEntity)
           .forEach(post::addImage);
 
@@ -174,22 +174,12 @@ public class PostDto {
       this.recommend = entity.isRecommend();
       this.postImages = entity.getPostImages().stream()
           .map(PostImageDto.Response::new)
+          .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
           .collect(Collectors.toList());
       this.createdAt = entity.getCreatedAt();
       this.lastModifiedAt = entity.getLastModifiedAt();
     }
 
-    public Response(PostSearchDto entity) {
-      this.id = entity.getId();
-      this.type = entity.getType();
-      this.title = entity.getTitle();
-      this.content = entity.getContent();
-      this.nickname = entity.getNickname();
-      this.recommend = entity.isRecommend();
-      this.postImages = entity.getPostImages();
-      this.createdAt = entity.getCreatedAt();
-      this.lastModifiedAt = entity.getLastModifiedAt();
-    }
   }
 
   @Setter
