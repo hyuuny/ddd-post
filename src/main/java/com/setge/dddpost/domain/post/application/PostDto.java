@@ -199,6 +199,9 @@ public class PostDto {
     @ApiModelProperty(value = "베스트리뷰", example = "true", required = false, position = 3)
     private Boolean recommend;
 
+    @ApiModelProperty(value = "베스트리뷰", example = "true", required = false, position = 4)
+    private PostType type;
+
   }
 
 }

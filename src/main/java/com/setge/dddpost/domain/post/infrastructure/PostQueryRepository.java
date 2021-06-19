@@ -7,6 +7,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
 import com.setge.dddpost.domain.post.domain.Post;
+import com.setge.dddpost.domain.post.domain.Post.PostType;
 import com.setge.dddpost.global.jpa.Querydsl4RepositorySupport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +28,18 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
         .selectFrom(post)
         .leftJoin(postImage).on(post.id.eq(postImage.post.id)).fetchJoin().distinct()
         .where(
-            PostRecommendEq(searchCondition.getRecommend()),
-            keywordSearch(searchCondition.getSearchOption(), searchCondition.getKeyword())
+            postRecommendEq(searchCondition.getRecommend()),
+            keywordSearch(searchCondition.getSearchOption(), searchCondition.getKeyword()),
+            postTypeEq(searchCondition.getType())
         )
     );
   }
 
-  private BooleanExpression PostRecommendEq(final Boolean recommend) {
+  private BooleanExpression postTypeEq(PostType type) {
+    return isEmpty(type) ? null : post.type.eq(type);
+  }
+
+  private BooleanExpression postRecommendEq(final Boolean recommend) {
     return isEmpty(recommend) ? null : recommend ? post.recommend.isTrue() : post.recommend.isFalse();
   }
 
