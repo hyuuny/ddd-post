@@ -56,11 +56,10 @@ public class PostAdminRestController {
     return pagedResourcesAssembler.toModel(page, postModelAssembler);
   }
 
-  @ApiOperation(value = "게시물 상세조회")
+  @ApiOperation(value = "게시물 상세 조회")
   @GetMapping("/{id}")
-  public ResponseEntity<Response> getPost(@PathVariable("id") final Long id) {
-    Response post = postService.getPost(id);
-    return ResponseEntity.ok(post);
+  public EntityModel<Response> getPost(@PathVariable("id") final Long id) {
+    return postModelAssembler.toModel(postService.getPost(id));
   }
 
   @ApiOperation(value = "추천 게시물 선정/해제")
