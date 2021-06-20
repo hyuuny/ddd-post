@@ -5,6 +5,7 @@ import static com.setge.dddpost.domain.post.application.PostDto.Response;
 import com.setge.dddpost.domain.post.application.PostDto.ChangeRecommendPost;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
+import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.Update;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,5 +23,7 @@ public interface PostService {
   void changeRecommendPost(ChangeRecommendPost dto);
 
   Page<Response> retrievePost(DetailedSearchCondition searchCondition, Pageable pageable);
+
+  Page<Response> retrievePost(SearchCondition searchCondition, Pageable pageable);
 
 }

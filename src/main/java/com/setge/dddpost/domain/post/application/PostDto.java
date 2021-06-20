@@ -87,7 +87,7 @@ public class PostDto {
     @ApiModelProperty(value = "게시물 이미지", position = 4)
     private List<PostImageDto.Create> postImages = Lists.newArrayList();
 
-    public void Update(Post entity) {
+    public void update(Post entity) {
       entity.changeType(this.type);
       entity.changeTitle(this.title);
       entity.changeContent(this.content);
@@ -134,7 +134,7 @@ public class PostDto {
   @NoArgsConstructor
   @AllArgsConstructor
   @Relation(collectionRelation = "posts")
-  @JsonInclude(Include.NON_NULL)
+  @JsonInclude(Include.NON_EMPTY)
   @ApiModel(value = "게시물")
   public static class Response {
 
@@ -201,6 +201,22 @@ public class PostDto {
 
     @ApiModelProperty(value = "베스트리뷰", example = "true", required = false, position = 4)
     private PostType type;
+
+  }
+
+  @Setter
+  @Getter
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  @ApiModel(value = "게시물 검색조건")
+  public static class SearchCondition {
+
+    @ApiModelProperty(value = "검색 옵션", example = "email", required = false, position = 1)
+    private String searchOption;
+
+    @ApiModelProperty(value = "검색 키워드", example = "웃긴", required = false, position = 2)
+    private String keyword;
 
   }
 

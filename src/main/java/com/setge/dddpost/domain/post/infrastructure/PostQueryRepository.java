@@ -6,6 +6,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
+import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
 import com.setge.dddpost.domain.post.domain.Post;
 import com.setge.dddpost.domain.post.domain.Post.PostType;
 import com.setge.dddpost.global.jpa.Querydsl4RepositorySupport;
@@ -35,12 +36,26 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
     );
   }
 
+  public Page<Post> search(
+      SearchCondition searchCondition,
+      Pageable pageable
+  ) {
+    return applyPagination(pageable, contentQuery -> contentQuery
+        .selectFrom(post)
+        .leftJoin(postImage).on(post.id.eq(postImage.post.id)).fetchJoin().distinct()
+        .where(
+            keywordSearch(searchCondition.getSearchOption(), searchCondition.getKeyword())
+        )
+    );
+  }
+
   private BooleanExpression postTypeEq(PostType type) {
     return isEmpty(type) ? null : post.type.eq(type);
   }
 
   private BooleanExpression postRecommendEq(final Boolean recommend) {
-    return isEmpty(recommend) ? null : recommend ? post.recommend.isTrue() : post.recommend.isFalse();
+    return isEmpty(recommend) ? null
+        : recommend ? post.recommend.isTrue() : post.recommend.isFalse();
   }
 
   private BooleanExpression keywordSearch(final String searchOption, final String keyword) {
@@ -56,8 +71,8 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
       return post.nickname.like("%" + keyword + "%");
     }
 
-      return null;
-    }
+    return null;
+  }
 
 
 }

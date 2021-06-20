@@ -4,6 +4,7 @@ import com.setge.dddpost.domain.post.application.PostDto.ChangeRecommendPost;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.Response;
+import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.Update;
 import com.setge.dddpost.domain.post.domain.Post;
 import com.setge.dddpost.domain.post.domain.PostRepository;
@@ -55,7 +56,7 @@ public class PostServiceImpl implements PostService {
   @Override
   public Response updatePost(final Long id, Update dto) {
     Post existingPost = findPostById(id);
-    dto.Update(existingPost);
+    dto.update(existingPost);
     return getPost(id);
   }
 
@@ -78,6 +79,12 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public Page<Response> retrievePost(DetailedSearchCondition searchCondition, Pageable pageable) {
+    Page<Post> search = postQueryRepository.search(searchCondition, pageable);
+    return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
+  }
+
+  @Override
+  public Page<Response> retrievePost(SearchCondition searchCondition, Pageable pageable) {
     Page<Post> search = postQueryRepository.search(searchCondition, pageable);
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
   }
