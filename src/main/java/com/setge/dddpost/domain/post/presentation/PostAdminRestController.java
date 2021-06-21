@@ -17,7 +17,6 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.CollectionModel;
@@ -45,7 +44,9 @@ public class PostAdminRestController {
   private final PostModelAssembler postModelAssembler;
 
 
-  @ApiOperation(value = "게시물 조회")
+  @ApiOperation(value = "게시물 조회 및 검색", notes = "searchOption: \n"
+      + "제목: title \n"
+      + "닉네임: nickname \n")
   @GetMapping
   public PagedModel<EntityModel<Response>> retrievePost(
       @Valid DetailedSearchCondition searchCondition,

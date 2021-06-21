@@ -2,6 +2,7 @@ package com.setge.dddpost.domain.post.presentation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -9,10 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.setge.dddpost.domain.post.application.PostDto.ChangeRecommendPost;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
-import com.setge.dddpost.domain.post.application.PostDto.RecommendPost;
-import com.setge.dddpost.domain.post.application.PostDto.Response;
+import com.setge.dddpost.domain.post.application.PostDto.Update;
 import com.setge.dddpost.domain.post.application.PostImageDto;
 import com.setge.dddpost.domain.post.application.PostService;
 import com.setge.dddpost.domain.post.domain.Post.PostType;
@@ -40,9 +39,9 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-class PostAdminRestControllerTest {
+class PostRestControllerTest {
 
-  private static final String BASE_URL = "/admin/api/posts";
+  private static final String BASE_URL = "/api/posts";
   private MockMvc mockMvc;
 
   @Autowired
@@ -75,25 +74,24 @@ class PostAdminRestControllerTest {
   void retrievePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
-
+    List<PostImageDto.Create> createPostImages = getCreatePostImages();
     IntStream.rangeClosed(1,31).forEach(i -> {
-    Create create;
+      Create create;
 
       if (i % 2 == 0) {
-      create = Create.builder()
-          .type(PostType.FUNNY)
-          .title("재미있는 자료 " + i)
-          .content(i + "일 있었던일 ㅋㅋ")
-          .nickname("참새" + i)
-          .postImages(createImages)
-          .build();
+        create = Create.builder()
+            .type(PostType.FREEDOM)
+            .title("여행 기록! " + i)
+            .content(i + "일 여행 다녀왔어요~")
+            .nickname("자유로운 영홍" + i)
+            .postImages(createPostImages)
+            .build();
       }else {
         create = Create.builder()
-            .type(PostType.SPORTS)
-            .title(i + "일 경기 요약 ")
-            .content(i + "일 경기 최고였어!")
-            .nickname("매니아" + i)
+            .type(PostType.FUNNY)
+            .title(i + "일 실화 ")
+            .content("제게 있었던 " + i + "일 실화입니다 ㅋㅋㅋ")
+            .nickname("이야기꾼" + i)
             .build();
       }
       postService.createPost(create);
@@ -101,11 +99,10 @@ class PostAdminRestControllerTest {
 
     // when
     ResultActions resultActions = mockMvc.perform(get(BASE_URL)
-        .contentType(MediaType.APPLICATION_JSON_VALUE)
-        .accept(MediaTypes.HAL_JSON_VALUE)
-//        .param("type", "SPORTS")
-        .param("searchOption", "nickname")
-            .param("keyword", "참새")
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .accept(MediaTypes.HAL_JSON_VALUE)
+            .param("searchOption", "title")
+            .param("keyword", "기록")
     )
         .andDo(print());
 
@@ -120,18 +117,47 @@ class PostAdminRestControllerTest {
   }
 
   @Test
+  @DisplayName("게시물 등록")
+  void createPost() throws Exception {
+
+    // given
+    List<PostImageDto.Create> createPostImages = getCreatePostImages();
+    Create create = Create.builder()
+        .type(PostType.FREEDOM)
+        .title("가슴 따듯해지는 이야기")
+        .content("봉사 다녀왔습니다")
+        .nickname("아름다운")
+        .postImages(createPostImages)
+        .build();
+
+    // when
+    ResultActions resultActions = mockMvc.perform(post(BASE_URL)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .accept(MediaTypes.HAL_JSON_VALUE)
+        .content(objectMapper.writeValueAsString(create)))
+        .andDo(print());
+
+    // then
+    resultActions
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.links").exists())
+        .andExpect(jsonPath("$.id").exists());
+
+  }
+
+  @Test
   @DisplayName("게시물 상세 조회")
   void getPost() throws Exception {
 
-    // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
+    List<PostImageDto.Create> createPostImages = getCreatePostImages();
     Create create = Create.builder()
-        .type(PostType.HORROR)
-        .title("제가 겪었던 무서운 일입니다.")
-        .content("제가 자는데 부엌에서 이상한 소리가...")
-        .nickname("컨저링")
-        .postImages(createImages)
+        .type(PostType.SPORTS)
+        .title("오늘 축구 보신분 ?")
+        .content("아니 거기서 왜 그렇게 했을까?")
+        .nickname("박지성최고")
+        .postImages(createPostImages)
         .build();
+
     Long id = postService.createPost(create).getId();
 
     // when
@@ -149,43 +175,48 @@ class PostAdminRestControllerTest {
   }
 
   @Test
-  @DisplayName("추천 게시물 선정/해제")
-  void changeRecommendPost() throws Exception {
+  @DisplayName("게시물 수정")
+  void updatePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
-    List<RecommendPost> recommendPosts = Lists.newArrayList();
+    List<PostImageDto.Create> createPostImages = getCreatePostImages();
+    Create create = Create.builder()
+        .type(PostType.SPORTS)
+        .title("오늘 축구 보신분 ?")
+        .content("아니 거기서 왜 그렇게 했을까?")
+        .nickname("박지성최고")
+        .postImages(createPostImages)
+        .build();
 
-    IntStream.rangeClosed(1, 5).forEach(i -> {
-      Create create = Create.builder()
-          .type(PostType.HORROR)
-          .title("제가 겪었던 무서운 일입니다.")
-          .content("제가 자는데 부엌에서 이상한 소리가...")
-          .nickname("컨저링")
-          .postImages(createImages)
-          .build();
+    Long postId = postService.createPost(create).getId();
 
-      Long id = postService.createPost(create).getId();
-
-      if (i % 2 == 0) {
-        recommendPosts.add(RecommendPost.builder().id(id).recommend(true).build());
-      }
-    });
-
-    ChangeRecommendPost changeRecommendPost = ChangeRecommendPost.builder()
-        .recommendPosts(recommendPosts)
+    Update update = Update.builder()
+        .type(PostType.HORROR)
+        .title("늦게 퇴근하던 중에 생긴 일")
+        .content("제가 잘 못 본것 일까요..? 사진도 같이 올려요...")
+        .postImages(
+            Lists.newArrayList(
+                Lists.newArrayList(
+                    PostImageDto.Create.builder().imageUrl("horror1.jpg").priority(1).build())
+            )
+        )
         .build();
 
     // when
-    ResultActions resultActions = mockMvc.perform(post(BASE_URL + "/recommend")
+    ResultActions resultActions = mockMvc.perform(patch(BASE_URL + "/{id}", postId)
         .contentType(MediaType.APPLICATION_JSON_VALUE)
         .accept(MediaTypes.HAL_JSON_VALUE)
-        .content(objectMapper.writeValueAsString(changeRecommendPost)))
+        .content(objectMapper.writeValueAsString(update)))
         .andDo(print());
 
     // then
     resultActions
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.links").exists())
+        .andExpect(jsonPath("$.id").exists())
+        .andExpect(jsonPath("$.type").value(update.getType().toString()))
+        .andExpect(jsonPath("$.title").value(update.getTitle()))
+        .andExpect(jsonPath("$.content").value(update.getContent()));
 
   }
 
@@ -194,17 +225,15 @@ class PostAdminRestControllerTest {
   void deletePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
+    List<PostImageDto.Create> createPostImages = getCreatePostImages();
     Create create = Create.builder()
-        .type(PostType.HORROR)
-        .title("제가 겪었던 무서운 일입니다.")
-        .content("제가 자는데 부엌에서 이상한 소리가...")
-        .nickname("컨저링")
-        .postImages(createImages)
+        .type(PostType.FREEDOM)
+        .title("삭제될 게시물")
+        .nickname("삭제예정")
+        .postImages(createPostImages)
         .build();
 
-    Response post = postService.createPost(create);
-    Long id = post.getId();
+    Long id = postService.createPost(create).getId();
 
     // when
     ResultActions resultActions = mockMvc.perform(delete(BASE_URL + "/{id}", id)
@@ -217,7 +246,6 @@ class PostAdminRestControllerTest {
         .andExpect(status().isNoContent());
 
   }
-
 
   private List<PostImageDto.Create> getCreatePostImages() {
 
