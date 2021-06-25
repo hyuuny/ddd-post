@@ -3,10 +3,10 @@ spring:
     ansi:
       enabled: always
   jpa:
-    show-sql: false
     properties:
       hibernate:
         format_sql: true
+
 
 logging:
   level:
