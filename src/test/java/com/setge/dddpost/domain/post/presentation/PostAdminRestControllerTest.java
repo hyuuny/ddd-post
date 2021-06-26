@@ -9,6 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.setge.dddpost.Fixtures;
+import com.setge.dddpost.domain.member.application.MemberDto.Join;
+import com.setge.dddpost.domain.member.application.MemberService;
+import com.setge.dddpost.domain.member.domain.MemberRepository;
 import com.setge.dddpost.domain.post.application.PostDto.ChangeRecommendPost;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
 import com.setge.dddpost.domain.post.application.PostDto.RecommendPost;
@@ -55,6 +59,12 @@ class PostAdminRestControllerTest {
   private PostService postService;
 
   @Autowired
+  private MemberRepository memberRepository;
+
+  @Autowired
+  private MemberService memberService;
+
+  @Autowired
   WebApplicationContext ctx;
 
   @BeforeEach
@@ -68,6 +78,7 @@ class PostAdminRestControllerTest {
   void tearDown() {
     System.out.println("delete All");
     postRepository.deleteAll();
+    memberRepository.deleteAll();
   }
 
   @Test
@@ -75,7 +86,16 @@ class PostAdminRestControllerTest {
   void retrievePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId1 = memberService.joinMember(join).getId();
+
+    join = Fixtures.anJoin()
+        .email("sample@naver.com")
+        .nickname("참새")
+        .build();
+    Long joinId2 = memberService.joinMember(join).getId();
 
     IntStream.rangeClosed(1,31).forEach(i -> {
     Create create;
@@ -83,17 +103,17 @@ class PostAdminRestControllerTest {
       if (i % 2 == 0) {
       create = Create.builder()
           .type(PostType.FUNNY)
+          .userId(joinId1)
           .title("재미있는 자료 " + i)
           .content(i + "일 있었던일 ㅋㅋ")
-          .nickname("참새" + i)
-          .postImages(createImages)
+          .postImages(getCreatePostImages())
           .build();
       }else {
         create = Create.builder()
             .type(PostType.SPORTS)
+            .userId(joinId2)
             .title(i + "일 경기 요약 ")
             .content(i + "일 경기 최고였어!")
-            .nickname("매니아" + i)
             .build();
       }
       postService.createPost(create);
@@ -124,14 +144,16 @@ class PostAdminRestControllerTest {
   void getPost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
-    Create create = Create.builder()
-        .type(PostType.HORROR)
-        .title("제가 겪었던 무서운 일입니다.")
-        .content("제가 자는데 부엌에서 이상한 소리가...")
-        .nickname("컨저링")
-        .postImages(createImages)
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
         .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = Fixtures.anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
+
     Long id = postService.createPost(create).getId();
 
     // when
@@ -153,18 +175,23 @@ class PostAdminRestControllerTest {
   void changeRecommendPost() throws Exception {
 
     // given
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
     List<PostImageDto.Create> createImages = getCreatePostImages();
     List<RecommendPost> recommendPosts = Lists.newArrayList();
 
     IntStream.rangeClosed(1, 5).forEach(i -> {
-      Create create = Create.builder()
+
+      Create create = Fixtures.anPost()
           .type(PostType.HORROR)
+          .userId(joinId)
           .title("제가 겪었던 무서운 일입니다.")
           .content("제가 자는데 부엌에서 이상한 소리가...")
-          .nickname("컨저링")
           .postImages(createImages)
           .build();
-
       Long id = postService.createPost(create).getId();
 
       if (i % 2 == 0) {
@@ -194,13 +221,14 @@ class PostAdminRestControllerTest {
   void deletePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createImages = getCreatePostImages();
-    Create create = Create.builder()
-        .type(PostType.HORROR)
-        .title("제가 겪었던 무서운 일입니다.")
-        .content("제가 자는데 부엌에서 이상한 소리가...")
-        .nickname("컨저링")
-        .postImages(createImages)
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = Fixtures.anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
         .build();
 
     Response post = postService.createPost(create);

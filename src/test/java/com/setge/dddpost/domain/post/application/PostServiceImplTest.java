@@ -1,8 +1,13 @@
 package com.setge.dddpost.domain.post.application;
 
+import static com.setge.dddpost.Fixtures.anJoin;
+import static com.setge.dddpost.Fixtures.anPost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
+import com.setge.dddpost.domain.member.application.MemberDto.Join;
+import com.setge.dddpost.domain.member.application.MemberService;
+import com.setge.dddpost.domain.member.domain.MemberRepository;
 import com.setge.dddpost.domain.post.application.PostDto.ChangeRecommendPost;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
@@ -13,6 +18,7 @@ import com.setge.dddpost.domain.post.domain.Post.PostType;
 import com.setge.dddpost.domain.post.domain.PostRepository;
 import java.util.List;
 import java.util.stream.IntStream;
+import javax.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 class PostServiceImplTest {
@@ -30,91 +37,88 @@ class PostServiceImplTest {
   @Autowired
   private PostRepository postRepository;
 
+  @Autowired
+  private MemberService memberService;
+
+  @Autowired
+  private MemberRepository memberRepository;
+
+  @Autowired
+  protected EntityManager em;
+
   @AfterEach
   void tearDown() {
     System.out.println("delete All");
     postRepository.deleteAll();
+    memberRepository.deleteAll();
   }
 
   @Test
+  @Transactional
   @DisplayName("게시물 등록")
   void createPost() {
 
     // given
-    List<PostImageDto.Create> createImages = getCreateImage();
-    Create create = getCreatePost(createImages);
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
 
     // when
-    Response post = postService.createPost(create);
+    Long id = postService.createPost(create).getId();
+
+    System.out.println("flush And Clear");
+    flushAndClear();
+
+    Response post = postService.getPost(id);
 
     // then
     assertThat(post.getType()).isEqualTo(create.getType().toString());
+    assertThat(post.getUserId()).isEqualTo(create.getUserId());
+    assertThat(post.getNickname()).isEqualTo(join.getNickname());
     assertThat(post.getTitle()).isEqualTo(create.getTitle());
     assertThat(post.getContent()).isEqualTo(create.getContent());
-    assertThat(post.getNickname()).isEqualTo(create.getNickname());
     assertThat(post.getPostImages().size()).isEqualTo(create.getPostImages().size());
 
   }
 
-  private Create getCreatePost(List<PostImageDto.Create> createImages) {
-    return Create.builder()
-        .type(PostType.FUNNY)
-        .title("재미있는 자료 올립니다 ㅋㅋㅋ")
-        .content("6월 13일 있었던 일 ㅋㅋㅋ")
-        .nickname("두덕")
-        .postImages(createImages)
-        .build();
+  public void flushAndClear() {
+    em.flush();
+    em.clear();
   }
 
-  private List<PostImageDto.Create> getCreateImage() {
-
-    PostImageDto.Create createImage1 = PostImageDto.Create.builder()
-        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_100.jpg")
-        .priority(1)
-        .build();
-
-    PostImageDto.Create createImage2 = PostImageDto.Create.builder()
-        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_300.jpg")
-        .priority(3)
-        .build();
-
-    PostImageDto.Create createImage3 = PostImageDto.Create.builder()
-        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_200.jpg")
-        .priority(2)
-        .build();
-
-    PostImageDto.Create createImage4 = PostImageDto.Create.builder()
-        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_400.jpg")
-        .priority(4)
-        .build();
-
-    List<PostImageDto.Create> createList = Lists.newArrayList();
-    createList.add(createImage1);
-    createList.add(createImage2);
-    createList.add(createImage3);
-    createList.add(createImage4);
-
-    return createList;
-  }
 
   @Test
   @DisplayName("게시물 조회")
   void getPost() {
 
     // given
-    List<PostImageDto.Create> createImages = getCreateImage();
-    Create create = getCreatePost(createImages);
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
 
-    // when
+    Create create = anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
+
+    // whenÎ
     Long postId = postService.createPost(create).getId();
     Response post = postService.getPost(postId);
 
     // then
     assertThat(post.getId()).isEqualTo(postId);
     assertThat(post.getType()).isEqualTo(create.getType().toString());
+    assertThat(post.getUserId()).isEqualTo(joinId);
+    assertThat(post.getNickname()).isEqualTo(join.getNickname());
     assertThat(post.getTitle()).isEqualTo(create.getTitle());
     assertThat(post.getContent()).isEqualTo(create.getContent());
-    assertThat(post.getNickname()).isEqualTo(create.getNickname());
     assertThat(post.getPostImages().size()).isEqualTo(create.getPostImages().size());
 
   }
@@ -124,8 +128,15 @@ class PostServiceImplTest {
   void updatePost() {
 
     // given
-    List<PostImageDto.Create> createImages = getCreateImage();
-    Create create = getCreatePost(createImages);
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
     Long postId = postService.createPost(create).getId();
 
     // when
@@ -156,8 +167,15 @@ class PostServiceImplTest {
   void deletePost() {
 
     // given
-    List<PostImageDto.Create> createImages = getCreateImage();
-    Create create = getCreatePost(createImages);
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
     Long postId = postService.createPost(create).getId();
 
     // when
@@ -173,14 +191,20 @@ class PostServiceImplTest {
   void changeRecommendPost() {
 
     // given
+
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
     List<RecommendPost> recommendPosts = Lists.newArrayList();
 
     IntStream.rangeClosed(1, 5).forEach(i -> {
       Create create = Create.builder()
           .type(PostType.FUNNY)
+          .userId(joinId)
           .title("재미있는 자료 올립니다 ㅋㅋㅋ")
           .content("6월 13일 있었던 일 ㅋㅋㅋ")
-          .nickname("두덕")
           .postImages(
               Lists.newArrayList(PostImageDto.Create.builder()
                   .imageUrl("image " + i)
@@ -214,23 +238,48 @@ class PostServiceImplTest {
   void retrievePost() {
 
     // given
+
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId1 = memberService.joinMember(join).getId();
+
+    join = anJoin()
+        .email("sample@naver.com")
+        .nickname("참새")
+        .build();
+    Long joinId2 = memberService.joinMember(join).getId();
+
     List<PostImageDto.Create> createImages = getCreatePostImages();
 
     IntStream.rangeClosed(1, 21).forEach(i -> {
-      Create create = Create.builder()
+
+      Create create;
+
+      if (i % 2 == 0) {
+      create = Create.builder()
           .type(PostType.FUNNY)
+          .userId(joinId1)
           .title("웃긴 자료 " + i)
           .content("재밌었던 일 " + i + "번째 !")
-          .nickname("두덕 " + i)
           .postImages(createImages)
           .build();
+      }else {
+        create = Create.builder()
+            .type(PostType.FUNNY)
+            .userId(joinId2)
+            .title("웃긴 자료 " + i)
+            .content("재밌었던 일 " + i + "번째 !")
+            .postImages(createImages)
+            .build();
+      }
       postService.createPost(create);
     });
 
     // when
     DetailedSearchCondition searchCondition = DetailedSearchCondition.builder()
-        .searchOption("title")
-        .keyword("2")
+        .searchOption("nickname")
+        .keyword("참새")
         .build();
 
     Page<Response> responses = postService.retrievePost(searchCondition, PageRequest.of(0, 10));
@@ -272,6 +321,37 @@ class PostServiceImplTest {
     });
 
     return createImages;
+  }
+
+  private List<PostImageDto.Create> getCreateImage() {
+
+    PostImageDto.Create createImage1 = PostImageDto.Create.builder()
+        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_100.jpg")
+        .priority(1)
+        .build();
+
+    PostImageDto.Create createImage2 = PostImageDto.Create.builder()
+        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_300.jpg")
+        .priority(3)
+        .build();
+
+    PostImageDto.Create createImage3 = PostImageDto.Create.builder()
+        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_200.jpg")
+        .priority(2)
+        .build();
+
+    PostImageDto.Create createImage4 = PostImageDto.Create.builder()
+        .imageUrl("https://exam-bucket.s3.ap-northeast-2.amazonaws.com/data/image_1315_400.jpg")
+        .priority(4)
+        .build();
+
+    List<PostImageDto.Create> createList = Lists.newArrayList();
+    createList.add(createImage1);
+    createList.add(createImage2);
+    createList.add(createImage3);
+    createList.add(createImage4);
+
+    return createList;
   }
 
 }

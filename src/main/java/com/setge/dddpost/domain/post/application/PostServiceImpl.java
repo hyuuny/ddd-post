@@ -38,16 +38,16 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public Response getPost(final Long id) {
-    Post post = findPostById(id);
+    PostSearchDto post = findPostById(id);
     return toResponse(post);
   }
 
-  private Response toResponse(Post post) {
+  private Response toResponse(PostSearchDto post) {
     return new Response(post);
   }
 
-  private Post findPostById(Long id) {
-    return postRepository.findById(id).orElseThrow(
+  private PostSearchDto findPostById(Long id) {
+    return postQueryRepository.findPostById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", id)
     );
   }
@@ -55,9 +55,15 @@ public class PostServiceImpl implements PostService {
   @Transactional
   @Override
   public Response updatePost(final Long id, Update dto) {
-    Post existingPost = findPostById(id);
+    Post existingPost = findById(id);
     dto.update(existingPost);
     return getPost(id);
+  }
+
+  private Post findById(Long id) {
+    return postRepository.findById(id).orElseThrow(
+        () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", id)
+    );
   }
 
   @Transactional
@@ -79,17 +85,17 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public Page<Response> retrievePost(DetailedSearchCondition searchCondition, Pageable pageable) {
-    Page<Post> search = postQueryRepository.search(searchCondition, pageable);
+    Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
   }
 
   @Override
   public Page<Response> retrievePost(SearchCondition searchCondition, Pageable pageable) {
-    Page<Post> search = postQueryRepository.search(searchCondition, pageable);
+    Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
   }
 
-  public List<Response> toResponses(Page<Post> searchDtos) {
+  public List<Response> toResponses(Page<PostSearchDto> searchDtos) {
     return searchDtos.getContent().stream()
         .map(Response::new)
         .collect(Collectors.toList());

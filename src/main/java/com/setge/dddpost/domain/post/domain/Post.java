@@ -47,10 +47,10 @@ public class Post extends BaseEntity {
   @Lob
   private String content;
 
-  @Column(nullable = false)
-  private String nickname;
-
   private boolean recommend;
+
+  @Column(nullable = false)
+  private Long userId;
 
   @Default
   @OneToMany(mappedBy = "post", cascade = ALL, fetch = LAZY, orphanRemoval = true)

@@ -9,7 +9,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -35,15 +34,15 @@ public class PostDto {
     private PostType type;
 
     @NotEmpty
-    @ApiModelProperty(value = "제목", example = "웃긴 자료", required = true, position = 2)
-    private String title;
-
-    @ApiModelProperty(value = "내용", example = "6월 13일 있었던 일 ㅋㅋㅋ", required = false, position = 3)
-    private String content;
+    @ApiModelProperty(value = "회원 ID", example = "두덕", required = true, position = 2)
+    private Long userId;
 
     @NotEmpty
-    @ApiModelProperty(value = "게시글 작성자", example = "두덕", required = true, position = 4)
-    private String nickname;
+    @ApiModelProperty(value = "제목", example = "웃긴 자료", required = true, position = 3)
+    private String title;
+
+    @ApiModelProperty(value = "내용", example = "6월 13일 있었던 일 ㅋㅋㅋ", required = false, position = 4)
+    private String content;
 
     @Default
     @ApiModelProperty(value = "게시물 이미지", position = 5)
@@ -52,9 +51,9 @@ public class PostDto {
     public Post toEntity() {
       Post post = Post.builder()
           .type(this.type)
+          .userId(this.userId)
           .title(this.title)
           .content(this.content)
-          .nickname(this.nickname)
           .build();
 
       this.postImages.stream()
@@ -141,17 +140,20 @@ public class PostDto {
     @ApiModelProperty(value = "게시물 ID", example = "1", required = true, position = 1)
     private Long id;
 
-    @ApiModelProperty(value = "게시물 타입", example = "웃긴", required = true, position = 2)
+    @ApiModelProperty(value = "회원 ID", example = "1", required = true, position = 2)
+    private Long userId;
+
+    @ApiModelProperty(value = "회원 닉네임", example = "두덕", required = true, position = 3)
+    private String nickname;
+
+    @ApiModelProperty(value = "게시물 타입", example = "웃긴", required = true, position = 4)
     private String type;
 
-    @ApiModelProperty(value = "제목", example = "웃긴 자료", required = true, position = 4)
+    @ApiModelProperty(value = "제목", example = "웃긴 자료", required = true, position = 5)
     private String title;
 
-    @ApiModelProperty(value = "내용", example = "6월 13일 있었던 일 ㅋㅋㅋ", required = true, position = 5)
+    @ApiModelProperty(value = "내용", example = "6월 13일 있었던 일 ㅋㅋㅋ", required = true, position = 6)
     private String content;
-
-    @ApiModelProperty(value = "게시글 작성자", example = "두덕", required = true, position = 6)
-    private String nickname;
 
     @ApiModelProperty(value = "추천 게시물 여부", example = "true", required = true, position = 7)
     private Boolean recommend;
@@ -165,17 +167,15 @@ public class PostDto {
     @ApiModelProperty(value = "최종수정일", example = "2020-06-13T21:18:58.139065", required = true, position = 10)
     private LocalDateTime lastModifiedAt;
 
-    public Response(Post entity) {
+    public Response(PostSearchDto entity) {
       this.id = entity.getId();
+      this.userId = entity.getUserId();
+      this.nickname = entity.getNickname();
       this.type = entity.toType();
       this.title = entity.getTitle();
       this.content = entity.getContent();
-      this.nickname = entity.getNickname();
       this.recommend = entity.isRecommend();
-      this.postImages = entity.getPostImages().stream()
-          .map(PostImageDto.Response::new)
-          .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
-          .collect(Collectors.toList());
+      this.postImages = entity.getPostImages();
       this.createdAt = entity.getCreatedAt();
       this.lastModifiedAt = entity.getLastModifiedAt();
     }

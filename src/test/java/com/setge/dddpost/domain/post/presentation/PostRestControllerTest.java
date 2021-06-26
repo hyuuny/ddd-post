@@ -10,6 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.setge.dddpost.Fixtures;
+import com.setge.dddpost.domain.member.application.MemberDto.Join;
+import com.setge.dddpost.domain.member.application.MemberService;
+import com.setge.dddpost.domain.member.domain.MemberRepository;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
 import com.setge.dddpost.domain.post.application.PostDto.Update;
 import com.setge.dddpost.domain.post.application.PostImageDto;
@@ -54,6 +58,12 @@ class PostRestControllerTest {
   private PostService postService;
 
   @Autowired
+  private MemberRepository memberRepository;
+
+  @Autowired
+  private MemberService memberService;
+
+  @Autowired
   WebApplicationContext ctx;
 
   @BeforeEach
@@ -67,6 +77,7 @@ class PostRestControllerTest {
   void tearDown() {
     System.out.println("delete All");
     postRepository.deleteAll();
+    memberRepository.deleteAll();
   }
 
   @Test
@@ -74,24 +85,30 @@ class PostRestControllerTest {
   void retrievePost() throws Exception {
 
     // given
+
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
     List<PostImageDto.Create> createPostImages = getCreatePostImages();
+
     IntStream.rangeClosed(1,31).forEach(i -> {
       Create create;
 
       if (i % 2 == 0) {
         create = Create.builder()
             .type(PostType.FREEDOM)
+            .userId(joinId)
             .title("여행 기록! " + i)
             .content(i + "일 여행 다녀왔어요~")
-            .nickname("자유로운 영홍" + i)
             .postImages(createPostImages)
             .build();
       }else {
         create = Create.builder()
             .type(PostType.FUNNY)
+            .userId(joinId)
             .title(i + "일 실화 ")
             .content("제게 있었던 " + i + "일 실화입니다 ㅋㅋㅋ")
-            .nickname("이야기꾼" + i)
             .build();
       }
       postService.createPost(create);
@@ -121,13 +138,14 @@ class PostRestControllerTest {
   void createPost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createPostImages = getCreatePostImages();
-    Create create = Create.builder()
-        .type(PostType.FREEDOM)
-        .title("가슴 따듯해지는 이야기")
-        .content("봉사 다녀왔습니다")
-        .nickname("아름다운")
-        .postImages(createPostImages)
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = Fixtures.anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
         .build();
 
     // when
@@ -149,13 +167,14 @@ class PostRestControllerTest {
   @DisplayName("게시물 상세 조회")
   void getPost() throws Exception {
 
-    List<PostImageDto.Create> createPostImages = getCreatePostImages();
-    Create create = Create.builder()
-        .type(PostType.SPORTS)
-        .title("오늘 축구 보신분 ?")
-        .content("아니 거기서 왜 그렇게 했을까?")
-        .nickname("박지성최고")
-        .postImages(createPostImages)
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = Fixtures.anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
         .build();
 
     Long id = postService.createPost(create).getId();
@@ -179,13 +198,14 @@ class PostRestControllerTest {
   void updatePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createPostImages = getCreatePostImages();
-    Create create = Create.builder()
-        .type(PostType.SPORTS)
-        .title("오늘 축구 보신분 ?")
-        .content("아니 거기서 왜 그렇게 했을까?")
-        .nickname("박지성최고")
-        .postImages(createPostImages)
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = Fixtures.anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
         .build();
 
     Long postId = postService.createPost(create).getId();
@@ -225,12 +245,14 @@ class PostRestControllerTest {
   void deletePost() throws Exception {
 
     // given
-    List<PostImageDto.Create> createPostImages = getCreatePostImages();
-    Create create = Create.builder()
-        .type(PostType.FREEDOM)
-        .title("삭제될 게시물")
-        .nickname("삭제예정")
-        .postImages(createPostImages)
+    Join join = Fixtures.anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = Fixtures.anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
         .build();
 
     Long id = postService.createPost(create).getId();

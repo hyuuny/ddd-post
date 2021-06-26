@@ -46,7 +46,9 @@ public class PostRestController {
   private final PostModelAssembler postModelAssembler;
 
 
-  @ApiOperation(value = "게시물 조회")
+  @ApiOperation(value = "게시물 조회 및 검색", notes = "searchOption: \n"
+      + "제목: title \n"
+      + "닉네임: nickname \n")
   @GetMapping
   public PagedModel<EntityModel<Response>> retrievePost(
       @Valid SearchCondition searchCondition,
