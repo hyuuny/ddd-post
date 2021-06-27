@@ -11,6 +11,7 @@ import com.setge.dddpost.domain.post.domain.PostRepository;
 import com.setge.dddpost.domain.post.infrastructure.PostQueryRepository;
 import com.setge.dddpost.global.exceptiron.HttpStatusMessageException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -38,8 +39,16 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public Response getPost(final Long id) {
-    PostSearchDto post = findPostById(id);
-    return toResponse(post);
+    PostSearchDto postSearchDto = findPostById(id);
+    postSearchDto.addPossImages(findPostImagesByPostId(id));
+    return toResponse(postSearchDto);
+  }
+
+  private List<PostImageDto.Response> findPostImagesByPostId(final Long id) {
+    return postQueryRepository.findPostImagesByPostId(id).stream()
+        .map(PostImageDto.Response::new)
+        .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
+        .collect(Collectors.toList());
   }
 
   private Response toResponse(PostSearchDto post) {
@@ -86,12 +95,36 @@ public class PostServiceImpl implements PostService {
   @Override
   public Page<Response> retrievePost(DetailedSearchCondition searchCondition, Pageable pageable) {
     Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
+    Map<Long, List<PostImageDto.Response>> postImagesMap = getPostIdMap(getPostIds(search));
+
+    search.getContent().stream()
+        .forEach(post -> post.addPossImages(postImagesMap.get(post.getId())));
+
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
+  }
+
+  private Map<Long, List<PostImageDto.Response>> getPostIdMap(List<Long> postIds) {
+    return postQueryRepository
+        .findPostImagesByPostIds(postIds).stream()
+        .map(PostImageDto.Response::new)
+        .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
+        .collect(Collectors.groupingBy(PostImageDto.Response::getPostId));
+  }
+
+  private List<Long> getPostIds(Page<PostSearchDto> search) {
+    return search.stream()
+        .map(PostSearchDto::getId)
+        .collect(Collectors.toList());
   }
 
   @Override
   public Page<Response> retrievePost(SearchCondition searchCondition, Pageable pageable) {
     Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
+    Map<Long, List<PostImageDto.Response>> postImagesMap = getPostIdMap(getPostIds(search));
+
+    search.getContent().stream()
+        .forEach(post -> post.addPossImages(postImagesMap.get(post.getId())));
+
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
   }
 

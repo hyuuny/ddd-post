@@ -1,0 +1,4 @@
+jpa:
+  properties:
+    hibernate:
+      default_batch_fetch_siz: 1000

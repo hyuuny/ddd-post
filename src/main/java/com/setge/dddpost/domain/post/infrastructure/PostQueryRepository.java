@@ -7,13 +7,14 @@ import static com.setge.dddpost.domain.post.domain.QPostImage.postImage;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
 import com.setge.dddpost.domain.post.application.PostSearchDto;
 import com.setge.dddpost.domain.post.domain.Post;
 import com.setge.dddpost.domain.post.domain.Post.PostType;
+import com.setge.dddpost.domain.post.domain.PostImage;
 import com.setge.dddpost.global.jpa.Querydsl4RepositorySupport;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +31,15 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
   public Optional<PostSearchDto> findPostById(final Long id) {
     PostSearchDto searchDto = getQueryFactory()
         .select(fields(PostSearchDto.class,
-            Expressions.as(post, "post"),
+            post.id.as("id"),
+            post.type.as("type"),
+            post.title.as("title"),
+            post.content.as("content"),
+            post.recommend.as("recommend"),
             member.id.as("userId"),
-            member.nickname.as("nickname")
+            member.nickname.as("nickname"),
+            post.createdAt.as("createdAt"),
+            post.lastModifiedAt.as("lastModifiedAt")
         ))
         .from(post)
         .join(member).on(post.userId.eq(member.id))
@@ -43,15 +50,27 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
     return Optional.ofNullable(searchDto);
   }
 
+  public List<PostImage> findPostImagesByPostId(final Long id) {
+    return getQueryFactory()
+        .selectFrom(postImage)
+        .where(
+            postImage.post.id.eq(id)
+        ).fetch();
+  }
+
   public Page<PostSearchDto> search(
       DetailedSearchCondition searchCondition,
       Pageable pageable
   ) {
     return applyPagination(pageable, contentQuery -> contentQuery
         .select(fields(PostSearchDto.class,
-            Expressions.as(post, "post"),
-            member.id.as("userId"),
-            member.nickname.as("nickname")
+            post.id.as("id"),
+            post.type.as("type"),
+            post.title.as("title"),
+            post.recommend.as("recommend"),
+            member.nickname.as("nickname"),
+            post.createdAt.as("createdAt"),
+            post.lastModifiedAt.as("lastModifiedAt")
         ))
         .from(post)
         .join(member).on(post.userId.eq(member.id))
@@ -63,15 +82,27 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
     );
   }
 
+  public List<PostImage> findPostImagesByPostIds(List<Long> postIds) {
+    return getQueryFactory()
+        .selectFrom(postImage)
+        .where(
+            postImage.post.id.in(postIds)
+        ).fetch();
+  }
+
   public Page<PostSearchDto> search(
       SearchCondition searchCondition,
       Pageable pageable
   ) {
     return applyPagination(pageable, contentQuery -> contentQuery
         .select(fields(PostSearchDto.class,
-            Expressions.as(post, "post"),
-            member.id.as("userId"),
-            member.nickname.as("nickname")
+            post.id.as("id"),
+            post.type.as("type"),
+            post.title.as("title"),
+            post.recommend.as("recommend"),
+            member.nickname.as("nickname"),
+            post.createdAt.as("createdAt"),
+            post.lastModifiedAt.as("lastModifiedAt")
         ))
         .from(post)
         .join(member).on(post.userId.eq(member.id))

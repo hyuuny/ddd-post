@@ -233,12 +233,12 @@ class PostServiceImplTest {
 
   }
 
+  @Transactional
   @Test
   @DisplayName("게시물 검색")
   void retrievePost() {
 
     // given
-
     Join join = anJoin()
         .nickname("펭귄")
         .build();
@@ -252,31 +252,35 @@ class PostServiceImplTest {
 
     List<PostImageDto.Create> createImages = getCreatePostImages();
 
-    IntStream.rangeClosed(1, 21).forEach(i -> {
+    IntStream.rangeClosed(1, 31).forEach(i -> {
 
       Create create;
 
       if (i % 2 == 0) {
-      create = Create.builder()
-          .type(PostType.FUNNY)
-          .userId(joinId1)
-          .title("웃긴 자료 " + i)
-          .content("재밌었던 일 " + i + "번째 !")
-          .postImages(createImages)
-          .build();
-      }else {
+        create = Create.builder()
+            .type(PostType.FUNNY)
+            .userId(joinId1)
+            .title("웃긴 자료 " + i)
+            .content("재밌었던 일 " + i + "번째 !")
+            .postImages(createImages)
+            .build();
+      } else {
         create = Create.builder()
             .type(PostType.FUNNY)
             .userId(joinId2)
             .title("웃긴 자료 " + i)
             .content("재밌었던 일 " + i + "번째 !")
-            .postImages(createImages)
+//            .postImages(createImages)
             .build();
       }
       postService.createPost(create);
     });
 
     // when
+
+    System.out.println("flush And Clear");
+    flushAndClear();
+
     DetailedSearchCondition searchCondition = DetailedSearchCondition.builder()
         .searchOption("nickname")
         .keyword("참새")
@@ -285,6 +289,11 @@ class PostServiceImplTest {
     Page<Response> responses = postService.retrievePost(searchCondition, PageRequest.of(0, 10));
 
     // then
+    searchRestPrint(responses);
+
+  }
+
+  private void searchRestPrint(Page<Response> responses) {
     for (Response response : responses) {
       System.out.println("id : " + response.getId());
       System.out.println("type : " + response.getType());
@@ -292,12 +301,16 @@ class PostServiceImplTest {
       System.out.println("content : " + response.getContent());
       System.out.println("nickname : " + response.getNickname());
 
-      for (PostImageDto.Response image : response.getPostImages()) {
-        System.out.println("image id : " + image.getId());
-        System.out.println("image post id : " + image.getPostId());
-        System.out.println("image url : " + image.getImageUrl());
-        System.out.println("image priority : " + image.getPriority());
+      if (response.getPostImages() != null) {
+
+        for (PostImageDto.Response image : response.getPostImages()) {
+          System.out.println("image id : " + image.getId());
+          System.out.println("image post id : " + image.getPostId());
+          System.out.println("image url : " + image.getImageUrl());
+          System.out.println("image priority : " + image.getPriority());
+        }
       }
+
       System.out.println();
       System.out.println("다음 게시물");
       System.out.println();
@@ -305,7 +318,6 @@ class PostServiceImplTest {
 
     System.out.println("total Page : " + responses.getTotalPages());
     System.out.println("total Elements : " + responses.getTotalElements());
-
   }
 
   private List<PostImageDto.Create> getCreatePostImages() {

@@ -140,7 +140,7 @@ public class PostDto {
     @ApiModelProperty(value = "게시물 ID", example = "1", required = true, position = 1)
     private Long id;
 
-    @ApiModelProperty(value = "회원 ID", example = "1", required = true, position = 2)
+    @ApiModelProperty(value = "회원 ID", example = "1", required = false, position = 2)
     private Long userId;
 
     @ApiModelProperty(value = "회원 닉네임", example = "두덕", required = true, position = 3)
@@ -152,7 +152,7 @@ public class PostDto {
     @ApiModelProperty(value = "제목", example = "웃긴 자료", required = true, position = 5)
     private String title;
 
-    @ApiModelProperty(value = "내용", example = "6월 13일 있었던 일 ㅋㅋㅋ", required = true, position = 6)
+    @ApiModelProperty(value = "내용", example = "6월 13일 있었던 일 ㅋㅋㅋ", required = false, position = 6)
     private String content;
 
     @ApiModelProperty(value = "추천 게시물 여부", example = "true", required = true, position = 7)

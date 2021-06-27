@@ -56,6 +56,7 @@ public class Post extends BaseEntity {
   @OneToMany(mappedBy = "post", cascade = ALL, fetch = LAZY, orphanRemoval = true)
   private List<PostImage> postImages = Lists.newArrayList();
 
+
   public void changeType(PostType type) {
     this.type = type;
   }
