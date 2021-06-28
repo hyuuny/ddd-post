@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @SpringBootTest
 class PostServiceImplTest {
 
@@ -54,7 +55,6 @@ class PostServiceImplTest {
   }
 
   @Test
-  @Transactional
   @DisplayName("게시물 등록")
   void createPost() {
 
@@ -289,36 +289,10 @@ class PostServiceImplTest {
     Page<Response> responses = postService.retrievePost(searchCondition, PageRequest.of(0, 10));
 
     // then
-    searchRestPrint(responses);
+    assertThat(responses.getTotalElements()).isEqualTo(16);
 
   }
 
-  private void searchRestPrint(Page<Response> responses) {
-    for (Response response : responses) {
-      System.out.println("id : " + response.getId());
-      System.out.println("type : " + response.getType());
-      System.out.println("title : " + response.getTitle());
-      System.out.println("content : " + response.getContent());
-      System.out.println("nickname : " + response.getNickname());
-
-      if (response.getPostImages() != null) {
-
-        for (PostImageDto.Response image : response.getPostImages()) {
-          System.out.println("image id : " + image.getId());
-          System.out.println("image post id : " + image.getPostId());
-          System.out.println("image url : " + image.getImageUrl());
-          System.out.println("image priority : " + image.getPriority());
-        }
-      }
-
-      System.out.println();
-      System.out.println("다음 게시물");
-      System.out.println();
-    }
-
-    System.out.println("total Page : " + responses.getTotalPages());
-    System.out.println("total Elements : " + responses.getTotalElements());
-  }
 
   private List<PostImageDto.Create> getCreatePostImages() {
 
