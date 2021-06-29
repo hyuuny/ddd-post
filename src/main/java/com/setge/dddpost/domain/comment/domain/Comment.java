@@ -37,6 +37,11 @@ public class Comment extends BaseEntity {
   @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
   private List<NestedComment> nestedComments = Lists.newArrayList();
 
+
+  public void setPost(Post post) {
+    this.post = post;
+  }
+
   public void changeContent(String content) {
     this.content = content;
   }
