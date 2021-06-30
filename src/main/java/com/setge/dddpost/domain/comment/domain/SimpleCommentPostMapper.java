@@ -9,24 +9,14 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class SimpleCommentValidator implements CommentValidator {
+public class SimpleCommentPostMapper implements CommentPostMapper {
 
   private final PostRepository postRepository;
 
-
   @Override
-  public void validate(Long postId, Comment comment) {
-    addPostValidation(postId, comment);
-  }
-
-  private void addPostValidation(Long postId, Comment comment) {
-    Post existingPost = findPostById(postId);
-    comment.setPost(existingPost);
-  }
-
-  private Post findPostById(Long postId) {
+  public Post findPostById(Long postId) {
     return postRepository.findById(postId).orElseThrow(
-        () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", postId)
-    );
+        () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", postId));
   }
+
 }

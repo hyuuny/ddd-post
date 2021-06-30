@@ -71,7 +71,7 @@ public class CommentDto {
     private String content;
 
     @ApiModelProperty(value = "대댓글", required = false, position = 6)
-    private List<NestedCommentDto.Response> children = Lists.newArrayList();
+    private List<NestedCommentDto.Response> nestedComments = Lists.newArrayList();
 
     @ApiModelProperty(value = "등록일", required = false, position = 7)
     private LocalDateTime createdAt;
@@ -85,6 +85,17 @@ public class CommentDto {
       this.userId = entity.getUserId();
       this.content = entity.getContent();
       this.createdAt = entity.getCreatedAt();
+    }
+
+    public Response(CommentSearchDto entity) {
+      this.id = entity.getId();
+      this.postId = entity.getPostId();
+      this.userId = entity.getUserId();
+      this.nickname = entity.getNickname();
+      this.content = entity.getContent();
+      this.nestedComments = entity.getNestedComments();
+      this.createdAt = entity.getCreatedAt();
+      this.lastModifiedAt = entity.getLastModifiedAt();
     }
 
   }
@@ -103,6 +114,22 @@ public class CommentDto {
     public void update(Comment entity) {
       entity.changeContent(this.content);
     }
+  }
+
+  @Setter
+  @Getter
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  @ApiModel(value = "댓글 검색조건")
+  public static class DetailedSearchCondition {
+
+    @ApiModelProperty(value = "검색 옵션", example = "nickname", required = false, position = 1)
+    private String searchOption;
+
+    @ApiModelProperty(value = "검색 키워드", example = "두덕", required = false, position = 2)
+    private String keyword;
+
   }
 
 }
