@@ -1,5 +1,6 @@
 package com.setge.dddpost;
 
+import com.setge.dddpost.domain.comment.application.CommentDto;
 import com.setge.dddpost.domain.member.application.MemberDto;
 import com.setge.dddpost.domain.member.application.MemberDto.Join;
 import com.setge.dddpost.domain.post.application.PostDto;
@@ -21,6 +22,12 @@ public class Fixtures {
         .email("exam@naver.com")
         .password("12341234")
         .nickname("두덕");
+  }
+
+  public static CommentDto.Create.CreateBuilder anComment(final Long userId) {
+    return CommentDto.Create.builder()
+        .userId(userId)
+        .content("첫코 달아요!");
   }
 
 
