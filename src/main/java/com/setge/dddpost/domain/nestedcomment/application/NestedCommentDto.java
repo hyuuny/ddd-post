@@ -73,13 +73,16 @@ public class NestedCommentDto {
     @ApiModelProperty(value = "등록일", required = false, position = 7)
     private LocalDateTime lastModifiedAt;
 
-    public Response(NestedComment entity) {
+    public Response(NestedCommentSearchDto entity) {
       this.id = entity.getId();
-      this.commentId = entity.toCommentId();
+      this.commentId = entity.getCommentId();
       this.userId = entity.getUserId();
+      this.nickname = entity.getNickname();
       this.content = entity.getContent();
       this.createdAt = entity.getCreatedAt();
+      this.lastModifiedAt = entity.getLastModifiedAt();
     }
+
   }
 
   @Getter

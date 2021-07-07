@@ -35,4 +35,7 @@ public class NestedComment extends BaseEntity {
     return comment.getId();
   }
 
+  public void setComment(Comment comment) {
+    this.comment = comment;
+  }
 }
