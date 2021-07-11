@@ -3,6 +3,7 @@ package com.setge.dddpost.domain.post.application;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Lists;
+import com.setge.dddpost.domain.comment.application.CommentDto;
 import com.setge.dddpost.domain.post.domain.Post;
 import com.setge.dddpost.domain.post.domain.Post.PostType;
 import io.swagger.annotations.ApiModel;
@@ -161,10 +162,13 @@ public class PostDto {
     @ApiModelProperty(value = "게시물 이미지", position = 8)
     private List<PostImageDto.Response> postImages = Lists.newArrayList();
 
-    @ApiModelProperty(value = "등록일시", example = "2020-06-13T21:18:58.139065", required = true, position = 9)
+    @ApiModelProperty(value = "게시물 이미지", position = 9)
+    private List<CommentDto.Response> comments = Lists.newArrayList();
+
+    @ApiModelProperty(value = "등록일시", example = "2020-06-13T21:18:58.139065", required = true, position = 10)
     private LocalDateTime createdAt;
 
-    @ApiModelProperty(value = "최종수정일", example = "2020-06-13T21:18:58.139065", required = true, position = 10)
+    @ApiModelProperty(value = "최종수정일", example = "2020-06-13T21:18:58.139065", required = true, position = 11)
     private LocalDateTime lastModifiedAt;
 
     public Response(PostSearchDto entity) {
@@ -176,6 +180,7 @@ public class PostDto {
       this.content = entity.getContent();
       this.recommend = entity.isRecommend();
       this.postImages = entity.getPostImages();
+      this.comments = entity.getComments();
       this.createdAt = entity.getCreatedAt();
       this.lastModifiedAt = entity.getLastModifiedAt();
     }

@@ -68,7 +68,7 @@ class MemberServiceImplTest {
   }
 
   @Test
-  @DisplayName("이메일 중복 체크")
+  @DisplayName("이메일 중복 예외")
   void checkEmail() throws Exception {
 
     // given
@@ -87,7 +87,7 @@ class MemberServiceImplTest {
   }
 
   @Test
-  @DisplayName("닉네임 중복 체크")
+  @DisplayName("닉네임 중복 예외")
   void checkNickname() throws Exception {
 
     // given

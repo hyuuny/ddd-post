@@ -3,9 +3,9 @@ package com.setge.dddpost.domain.comment.application;
 import static com.setge.dddpost.Fixtures.anComment;
 import static com.setge.dddpost.Fixtures.anJoin;
 import static com.setge.dddpost.Fixtures.anPost;
+import static com.setge.dddpost.Fixtures.anPostImage;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.setge.dddpost.Fixtures;
 import com.setge.dddpost.domain.comment.application.CommentDto.Create;
 import com.setge.dddpost.domain.comment.application.CommentDto.DetailedSearchCondition;
 import com.setge.dddpost.domain.comment.application.CommentDto.Response;
@@ -14,13 +14,14 @@ import com.setge.dddpost.domain.comment.domain.CommentRepository;
 import com.setge.dddpost.domain.member.application.MemberDto.Join;
 import com.setge.dddpost.domain.member.application.MemberService;
 import com.setge.dddpost.domain.member.domain.MemberRepository;
+import com.setge.dddpost.domain.post.application.PostDto;
 import com.setge.dddpost.domain.post.application.PostService;
 import com.setge.dddpost.domain.post.domain.PostRepository;
+import java.util.List;
 import java.util.stream.IntStream;
 import javax.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,10 +74,10 @@ class CommentServiceImplTest {
 
     Create create = anComment(userId).build();
 
-    // whenD
+    // when
     Response comment = commentService.createComment(postId, create);
 
-    // thenD
+    // then
     assertThat(comment.getPostId()).isEqualTo(postId);
     assertThat(comment.getUserId()).isEqualTo(userId);
     assertThat(comment.getNickname()).isEqualTo(join.getNickname());
@@ -182,6 +183,7 @@ class CommentServiceImplTest {
     assertThat(page.getTotalPages()).isEqualTo(2);
 
   }
+
 
   private void flushAndClear() {
     em.flush();

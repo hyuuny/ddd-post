@@ -79,14 +79,6 @@ public class CommentDto {
     @ApiModelProperty(value = "수정일", required = false, position = 8)
     private LocalDateTime lastModifiedAt;
 
-    public Response(Comment entity) {
-      this.id = entity.getId();
-      this.postId = entity.toPostId();
-      this.userId = entity.getUserId();
-      this.content = entity.getContent();
-      this.createdAt = entity.getCreatedAt();
-    }
-
     public Response(CommentSearchDto entity) {
       this.id = entity.getId();
       this.postId = entity.getPostId();

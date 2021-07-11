@@ -7,9 +7,8 @@ import com.setge.dddpost.domain.post.application.PostDto.Response;
 import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.Update;
 import com.setge.dddpost.domain.post.domain.Post;
+import com.setge.dddpost.domain.post.domain.PostDomainService;
 import com.setge.dddpost.domain.post.domain.PostRepository;
-import com.setge.dddpost.domain.post.infrastructure.PostQueryRepository;
-import com.setge.dddpost.global.exceptiron.HttpStatusMessageException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,52 +25,32 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostServiceImpl implements PostService {
 
   private final PostRepository postRepository;
-  private final PostQueryRepository postQueryRepository;
+  private final PostDomainService domainService;
 
   @Transactional
   @Override
   public Response createPost(Create dto) {
     Post post = dto.toEntity();
-    Long postId = postRepository.save(post).getId();
-    return getPost(postId);
+    return getPost(postRepository.save(post).getId());
   }
 
   @Override
   public Response getPost(final Long id) {
-    PostSearchDto postSearchDto = findPostById(id);
-    postSearchDto.addPossImages(findPostImagesByPostId(id));
+    PostSearchDto postSearchDto = domainService.findPostById(id);
+    postSearchDto.addPossImages(domainService.findPostImagesById(id));
     return toResponse(postSearchDto);
-  }
-
-  private List<PostImageDto.Response> findPostImagesByPostId(final Long id) {
-    return postQueryRepository.findPostImagesByPostId(id).stream()
-        .map(PostImageDto.Response::new)
-        .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
-        .collect(Collectors.toList());
   }
 
   private Response toResponse(PostSearchDto post) {
     return new Response(post);
   }
 
-  private PostSearchDto findPostById(Long id) {
-    return postQueryRepository.findPostById(id).orElseThrow(
-        () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", id)
-    );
-  }
-
   @Transactional
   @Override
   public Response updatePost(final Long id, Update dto) {
-    Post existingPost = findById(id);
+    Post existingPost = domainService.findById(id);
     dto.update(existingPost);
     return getPost(id);
-  }
-
-  private Post findById(Long id) {
-    return postRepository.findById(id).orElseThrow(
-        () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", id)
-    );
   }
 
   @Transactional
@@ -85,30 +63,19 @@ public class PostServiceImpl implements PostService {
   @Override
   public void changeRecommendPost(ChangeRecommendPost dto) {
     dto.getRecommendPosts().forEach(recommendPost -> {
-      Post existingPost = postRepository.findById(recommendPost.getId()).orElseThrow(
-          () -> new HttpStatusMessageException(
-              HttpStatus.BAD_REQUEST, "post.notFound", recommendPost.getId()));
-      existingPost.changeRecommendPost(recommendPost.getRecommend());
+     domainService.saveRecommendPost(recommendPost.getId(), recommendPost.getRecommend());
     });
   }
 
   @Override
   public Page<Response> retrievePost(DetailedSearchCondition searchCondition, Pageable pageable) {
-    Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
-    Map<Long, List<PostImageDto.Response>> postImagesMap = getPostIdMap(getPostIds(search));
+    Page<PostSearchDto> search = domainService.search(searchCondition, pageable);
+    Map<Long, List<PostImageDto.Response>> postImagesMap = domainService.getPostIdMap(getPostIds(search));
 
     search.getContent().stream()
         .forEach(post -> post.addPossImages(postImagesMap.get(post.getId())));
 
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
-  }
-
-  private Map<Long, List<PostImageDto.Response>> getPostIdMap(List<Long> postIds) {
-    return postQueryRepository
-        .findPostImagesByPostIds(postIds).stream()
-        .map(PostImageDto.Response::new)
-        .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
-        .collect(Collectors.groupingBy(PostImageDto.Response::getPostId));
   }
 
   private List<Long> getPostIds(Page<PostSearchDto> search) {
@@ -119,8 +86,8 @@ public class PostServiceImpl implements PostService {
 
   @Override
   public Page<Response> retrievePost(SearchCondition searchCondition, Pageable pageable) {
-    Page<PostSearchDto> search = postQueryRepository.search(searchCondition, pageable);
-    Map<Long, List<PostImageDto.Response>> postImagesMap = getPostIdMap(getPostIds(search));
+    Page<PostSearchDto> search = domainService.search(searchCondition, pageable);
+    Map<Long, List<PostImageDto.Response>> postImagesMap = domainService.getPostIdMap(getPostIds(search));
 
     search.getContent().stream()
         .forEach(post -> post.addPossImages(postImagesMap.get(post.getId())));

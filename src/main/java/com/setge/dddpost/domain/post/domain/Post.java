@@ -4,6 +4,7 @@ import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.FetchType.LAZY;
 
 import com.google.common.collect.Lists;
+import com.setge.dddpost.domain.comment.domain.Comment;
 import com.setge.dddpost.global.common.BaseEntity;
 import java.util.List;
 import javax.persistence.Column;
@@ -55,6 +56,10 @@ public class Post extends BaseEntity {
   @Default
   @OneToMany(mappedBy = "post", cascade = ALL, fetch = LAZY, orphanRemoval = true)
   private List<PostImage> postImages = Lists.newArrayList();
+
+  @Default
+  @OneToMany(mappedBy = "post", cascade = ALL, fetch = LAZY, orphanRemoval = true)
+  private List<Comment> comments = Lists.newArrayList();
 
 
   public void changeType(PostType type) {

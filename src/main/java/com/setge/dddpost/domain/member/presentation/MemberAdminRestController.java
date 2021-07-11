@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Api(tags = {"Member API"})
+@Api(tags = {"회원 API"})
 @RequestMapping("/admin/api/members")
 @RequiredArgsConstructor
 @RestController

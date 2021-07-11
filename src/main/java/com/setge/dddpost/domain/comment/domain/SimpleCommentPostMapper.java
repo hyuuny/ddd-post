@@ -19,4 +19,5 @@ public class SimpleCommentPostMapper implements CommentPostMapper {
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", postId));
   }
 
+
 }

@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Api(tags = {"Post API"})
+@Api(tags = {"게시물 API"})
 @RequestMapping(value = "/admin/api/posts", produces = MediaTypes.HAL_JSON_VALUE)
 @RequiredArgsConstructor
 @RestController

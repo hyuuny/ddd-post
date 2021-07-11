@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.setge.dddpost.BaseIntegrationTest;
 import com.setge.dddpost.Fixtures;
 import com.setge.dddpost.domain.member.application.MemberDto.Join;
 import com.setge.dddpost.domain.member.application.MemberService;
@@ -33,32 +34,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-@ActiveProfiles("test")
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-class MemberAdminRestControllerTest {
+class MemberAdminRestControllerTest extends BaseIntegrationTest {
 
   private static final String BASE_URL = "/admin/api/members";
-  private MockMvc mockMvc;
 
   @Autowired
   private MemberService memberService;
 
   @Autowired
   private MemberRepository memberRepository;
-
-  @Autowired
-  ObjectMapper objectMapper;
-
-  @Autowired
-  WebApplicationContext ctx;
-
-  @BeforeEach
-  void setUp() {
-    this.mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
-        .addFilters(new CharacterEncodingFilter("UTF-8", true))
-        .alwaysDo(print()).build();
-  }
 
   @AfterEach
   void tearDown() {

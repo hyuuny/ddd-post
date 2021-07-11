@@ -52,4 +52,8 @@ public class Member extends BaseEntity {
     return status.toString();
   }
 
+  public void create(MemberValidator validator) {
+    validator.validate(this);
+  }
+
 }

@@ -28,7 +28,7 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
   }
 
 
-  public Optional<PostSearchDto> findPostById(final Long id) {
+  public Optional<PostSearchDto> findById(final Long id) {
     PostSearchDto searchDto = getQueryFactory()
         .select(fields(PostSearchDto.class,
             post.id.as("id"),
@@ -50,7 +50,7 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
     return Optional.ofNullable(searchDto);
   }
 
-  public List<PostImage> findPostImagesByPostId(final Long id) {
+  public List<PostImage> findPostImagesById(final Long id) {
     return getQueryFactory()
         .selectFrom(postImage)
         .where(
@@ -82,7 +82,7 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
     );
   }
 
-  public List<PostImage> findPostImagesByPostIds(List<Long> postIds) {
+  public List<PostImage> findPostImagesByIds(List<Long> postIds) {
     return getQueryFactory()
         .selectFrom(postImage)
         .where(
