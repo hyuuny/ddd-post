@@ -48,7 +48,7 @@ public class CommentQueryRepository extends Querydsl4RepositorySupport {
     return Optional.ofNullable(searchDto);
   }
 
-  public List<CommentSearchDto> findCommentSearchDtoById(final Long id) {
+  public List<CommentSearchDto> findSearchDtosById(final Long id) {
     return getQueryFactory()
         .select(fields(CommentSearchDto.class,
             comment.id.as("id"),

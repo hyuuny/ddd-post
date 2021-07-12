@@ -21,10 +21,13 @@ public class PostSearchDto {
   private String title;
   private String content;
   private boolean recommend;
-  private List<PostImageDto.Response> postImages;
-  private List<CommentDto.Response> comments;
   private Long userId;
   private String nickname;
+  private long commentCount;
+  private long nestedCommentCount;
+  private long totalCommentCount;
+  private List<PostImageDto.Response> postImages;
+  private List<CommentDto.Response> comments;
   private LocalDateTime createdAt;
   private LocalDateTime lastModifiedAt;
 
@@ -34,6 +37,14 @@ public class PostSearchDto {
 
   public void addPossImages(List<Response> postImages) {
     this.postImages = postImages;
+  }
+
+  public void addComments(List<CommentDto.Response> comments) {
+    this.comments = comments;
+  }
+
+  public long getTotalCommentCount() {
+    return this.commentCount + this.nestedCommentCount;
   }
 
 }

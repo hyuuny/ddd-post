@@ -1,13 +1,21 @@
 package com.setge.dddpost.domain.post.application;
 
+import static com.setge.dddpost.Fixtures.anComment;
 import static com.setge.dddpost.Fixtures.anJoin;
+import static com.setge.dddpost.Fixtures.anNestedComment;
 import static com.setge.dddpost.Fixtures.anPost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
+import com.setge.dddpost.domain.comment.application.CommentDto;
+import com.setge.dddpost.domain.comment.application.CommentSearchDto;
+import com.setge.dddpost.domain.comment.application.CommentService;
+import com.setge.dddpost.domain.comment.domain.CommentRepository;
 import com.setge.dddpost.domain.member.application.MemberDto.Join;
 import com.setge.dddpost.domain.member.application.MemberService;
 import com.setge.dddpost.domain.member.domain.MemberRepository;
+import com.setge.dddpost.domain.nestedcomment.application.NestedCommentService;
+import com.setge.dddpost.domain.nestedcomment.domain.NestedCommentRepository;
 import com.setge.dddpost.domain.post.application.PostDto.ChangeRecommendPost;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
@@ -45,7 +53,14 @@ class PostServiceImplTest {
   private MemberRepository memberRepository;
 
   @Autowired
+  private CommentService commentService;
+
+  @Autowired
+  private NestedCommentService nestedCommentService;
+
+  @Autowired
   protected EntityManager em;
+
 
   @AfterEach
   void tearDown() {
@@ -53,6 +68,45 @@ class PostServiceImplTest {
     postRepository.deleteAll();
     memberRepository.deleteAll();
   }
+
+
+  @Test
+  @DisplayName("게시물에 달린 댓글 + 대댓글 조회")
+  public void getPostAndCommentAndNestedComment() {
+
+    // given
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
+
+    Long postId = postService.createPost(create).getId();
+
+    IntStream.rangeClosed(0, 3).forEach(i -> {
+      Long commentId = commentService.createComment(postId, anComment(joinId).build()).getId();
+
+      IntStream.rangeClosed(0, 5).forEach(j -> {
+        nestedCommentService.createNestedComment(commentId, anNestedComment(joinId).build());
+      });
+
+    });
+
+    // when
+    Response post = postService.getPost(postId);
+
+    // then
+    assertThat(post.getComments().size()).isEqualTo(4);
+    for (CommentDto.Response comment : post.getComments()) {
+      assertThat(comment.getNestedComments().size()).isEqualTo(6);
+    }
+
+  }
+
 
   @Test
   @DisplayName("게시물 등록")

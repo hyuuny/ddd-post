@@ -1,5 +1,10 @@
 package com.setge.dddpost.domain.post.presentation;
 
+import static com.setge.dddpost.Fixtures.anComment;
+import static com.setge.dddpost.Fixtures.anJoin;
+import static com.setge.dddpost.Fixtures.anNestedComment;
+import static com.setge.dddpost.Fixtures.anPost;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -11,10 +16,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.google.common.collect.Lists;
 import com.setge.dddpost.BaseIntegrationTest;
 import com.setge.dddpost.Fixtures;
+import com.setge.dddpost.domain.comment.application.CommentDto;
+import com.setge.dddpost.domain.comment.application.CommentService;
 import com.setge.dddpost.domain.member.application.MemberDto.Join;
 import com.setge.dddpost.domain.member.application.MemberService;
 import com.setge.dddpost.domain.member.domain.MemberRepository;
+import com.setge.dddpost.domain.nestedcomment.application.NestedCommentService;
 import com.setge.dddpost.domain.post.application.PostDto.Create;
+import com.setge.dddpost.domain.post.application.PostDto.Response;
 import com.setge.dddpost.domain.post.application.PostDto.Update;
 import com.setge.dddpost.domain.post.application.PostImageDto;
 import com.setge.dddpost.domain.post.application.PostService;
@@ -46,12 +55,54 @@ class PostRestControllerTest extends BaseIntegrationTest {
   @Autowired
   private MemberService memberService;
 
+  @Autowired
+  private CommentService commentService;
+
+  @Autowired
+  private NestedCommentService nestedCommentService;
+
+
   @AfterEach
   void tearDown() {
     System.out.println("delete All");
     postRepository.deleteAll();
     memberRepository.deleteAll();
   }
+
+
+  @Test
+  @DisplayName("게시물에 달린 댓글 + 대댓글 조회")
+  public void getPostAndCommentAndNestedComment() throws Exception {
+
+    // given
+    Join join = anJoin()
+        .nickname("펭귄")
+        .build();
+    Long joinId = memberService.joinMember(join).getId();
+
+    Create create = anPost()
+        .userId(joinId)
+        .postImages(getCreatePostImages())
+        .build();
+
+    Long postId = postService.createPost(create).getId();
+
+    createCommentAndNestedComment(joinId, postId);
+    postService.getPost(postId);
+
+    // then
+    ResultActions resultActions = mockMvc.perform(get(BASE_URL + "/{id}", postId)
+        .contentType(MediaType.APPLICATION_JSON_VALUE)
+        .accept(MediaTypes.HAL_JSON_VALUE))
+        .andDo(print());
+
+    // then
+    resultActions
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.links").exists())
+        .andExpect(jsonPath("$.id").exists());
+  }
+
 
   @Test
   @DisplayName("게시물 조회")
@@ -65,7 +116,7 @@ class PostRestControllerTest extends BaseIntegrationTest {
     Long joinId = memberService.joinMember(join).getId();
     List<PostImageDto.Create> createPostImages = getCreatePostImages();
 
-    IntStream.rangeClosed(1,31).forEach(i -> {
+    IntStream.rangeClosed(1, 31).forEach(i -> {
       Create create;
 
       if (i % 2 == 0) {
@@ -76,7 +127,7 @@ class PostRestControllerTest extends BaseIntegrationTest {
             .content(i + "일 여행 다녀왔어요~")
             .postImages(createPostImages)
             .build();
-      }else {
+      } else {
         create = Create.builder()
             .type(PostType.FUNNY)
             .userId(joinId)
@@ -84,15 +135,17 @@ class PostRestControllerTest extends BaseIntegrationTest {
             .content("제게 있었던 " + i + "일 실화입니다 ㅋㅋㅋ")
             .build();
       }
-      postService.createPost(create);
+      Long postId = postService.createPost(create).getId();
+      createCommentAndNestedComment(joinId, postId);
+
     });
 
     // when
     ResultActions resultActions = mockMvc.perform(get(BASE_URL)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .accept(MediaTypes.HAL_JSON_VALUE)
-            .param("searchOption", "title")
-            .param("keyword", "기록")
+//        .param("searchOption", "title")
+//        .param("keyword", "기록")
     )
         .andDo(print());
 
@@ -241,6 +294,20 @@ class PostRestControllerTest extends BaseIntegrationTest {
         .andExpect(status().isNoContent());
 
   }
+
+  private void createCommentAndNestedComment(Long joinId, Long postId) {
+    IntStream.rangeClosed(0, 5).forEach(i -> {
+      Long commentId = commentService
+          .createComment(postId, anComment(joinId).content("댓글 " + i).build()).getId();
+
+      IntStream.rangeClosed(0, 3).forEach(j -> {
+        nestedCommentService
+            .createNestedComment(commentId, anNestedComment(joinId).content("대댓글 " + j).build());
+      });
+
+    });
+  }
+
 
   private List<PostImageDto.Create> getCreatePostImages() {
 

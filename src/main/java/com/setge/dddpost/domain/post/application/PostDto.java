@@ -159,16 +159,19 @@ public class PostDto {
     @ApiModelProperty(value = "추천 게시물 여부", example = "true", required = true, position = 7)
     private Boolean recommend;
 
-    @ApiModelProperty(value = "게시물 이미지", position = 8)
-    private List<PostImageDto.Response> postImages = Lists.newArrayList();
+    @ApiModelProperty(value = "댓글 수(댓글+대댓글)", example = "19", required = false, position = 8)
+    private long totalCommentCount;
 
     @ApiModelProperty(value = "게시물 이미지", position = 9)
+    private List<PostImageDto.Response> postImages = Lists.newArrayList();
+
+    @ApiModelProperty(value = "게시물 이미지", position = 10)
     private List<CommentDto.Response> comments = Lists.newArrayList();
 
-    @ApiModelProperty(value = "등록일시", example = "2020-06-13T21:18:58.139065", required = true, position = 10)
+    @ApiModelProperty(value = "등록일시", example = "2020-06-13T21:18:58.139065", required = true, position = 11)
     private LocalDateTime createdAt;
 
-    @ApiModelProperty(value = "최종수정일", example = "2020-06-13T21:18:58.139065", required = true, position = 11)
+    @ApiModelProperty(value = "최종수정일", example = "2020-06-13T21:18:58.139065", required = true, position = 12)
     private LocalDateTime lastModifiedAt;
 
     public Response(PostSearchDto entity) {
@@ -179,6 +182,7 @@ public class PostDto {
       this.title = entity.getTitle();
       this.content = entity.getContent();
       this.recommend = entity.isRecommend();
+      this.totalCommentCount = entity.getTotalCommentCount();
       this.postImages = entity.getPostImages();
       this.comments = entity.getComments();
       this.createdAt = entity.getCreatedAt();

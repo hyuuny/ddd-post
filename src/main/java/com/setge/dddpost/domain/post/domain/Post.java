@@ -82,9 +82,5 @@ public class Post extends BaseEntity {
     image.setPostImage(this);
   }
 
-  public String toType() {
-    return type.toString();
-  }
-
 
 }

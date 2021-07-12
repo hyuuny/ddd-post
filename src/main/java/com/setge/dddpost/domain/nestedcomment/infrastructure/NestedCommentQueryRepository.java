@@ -7,6 +7,7 @@ import static com.setge.dddpost.domain.nestedcomment.domain.QNestedComment.neste
 import com.setge.dddpost.domain.nestedcomment.application.NestedCommentSearchDto;
 import com.setge.dddpost.domain.nestedcomment.domain.NestedComment;
 import com.setge.dddpost.global.jpa.Querydsl4RepositorySupport;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -36,6 +37,25 @@ public class NestedCommentQueryRepository extends Querydsl4RepositorySupport {
         .fetchOne();
 
     return Optional.ofNullable(searchDto);
+  }
+
+  public List<NestedCommentSearchDto> findSearchDtosById(List<Long> commentIds) {
+    return getQueryFactory()
+        .select(fields(NestedCommentSearchDto.class,
+            nestedComment.id.as("id"),
+            nestedComment.comment.id.as("commentId"),
+            nestedComment.userId.as("userId"),
+            member.nickname.as("nickname"),
+            nestedComment.content.as("content"),
+            nestedComment.createdAt.as("createdAt"),
+            nestedComment.lastModifiedAt.as("lastModifiedAt")
+        ))
+        .from(nestedComment)
+        .join(member).on(nestedComment.userId.eq(member.id))
+        .where(
+            nestedComment.comment.id.in(commentIds)
+        )
+        .fetch();
   }
 
 }

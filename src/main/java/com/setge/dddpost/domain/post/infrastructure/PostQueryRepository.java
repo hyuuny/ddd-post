@@ -1,12 +1,19 @@
 package com.setge.dddpost.domain.post.infrastructure;
 
+import static com.querydsl.core.types.ExpressionUtils.count;
 import static com.querydsl.core.types.Projections.fields;
+import static com.setge.dddpost.domain.comment.domain.QComment.comment;
 import static com.setge.dddpost.domain.member.domain.QMember.member;
+import static com.setge.dddpost.domain.nestedcomment.domain.QNestedComment.nestedComment;
 import static com.setge.dddpost.domain.post.domain.QPost.post;
 import static com.setge.dddpost.domain.post.domain.QPostImage.postImage;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.setge.dddpost.domain.comment.domain.QComment;
+import com.setge.dddpost.domain.nestedcomment.domain.QNestedComment;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
 import com.setge.dddpost.domain.post.application.PostSearchDto;
@@ -39,7 +46,15 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
             member.id.as("userId"),
             member.nickname.as("nickname"),
             post.createdAt.as("createdAt"),
-            post.lastModifiedAt.as("lastModifiedAt")
+            post.lastModifiedAt.as("lastModifiedAt"),
+            ExpressionUtils.as(
+                JPAExpressions.select(count(comment.id))
+                    .from(comment)
+                    .where(comment.post.id.eq(post.id)), "commentCount"),
+            ExpressionUtils.as(
+                JPAExpressions.select(count(nestedComment.id))
+                    .from(nestedComment)
+                    .where(nestedComment.comment.post.id.eq(post.id)), "nestedCommentCount")
         ))
         .from(post)
         .join(member).on(post.userId.eq(member.id))
@@ -58,6 +73,14 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
         ).fetch();
   }
 
+  public List<PostImage> findPostImagesByIds(List<Long> postIds) {
+    return getQueryFactory()
+        .selectFrom(postImage)
+        .where(
+            postImage.post.id.in(postIds)
+        ).fetch();
+  }
+
   public Page<PostSearchDto> search(
       DetailedSearchCondition searchCondition,
       Pageable pageable
@@ -70,7 +93,15 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
             post.recommend.as("recommend"),
             member.nickname.as("nickname"),
             post.createdAt.as("createdAt"),
-            post.lastModifiedAt.as("lastModifiedAt")
+            post.lastModifiedAt.as("lastModifiedAt"),
+            ExpressionUtils.as(
+                JPAExpressions.select(count(comment.id))
+                    .from(comment)
+                    .where(comment.post.id.eq(post.id)), "commentCount"),
+            ExpressionUtils.as(
+                JPAExpressions.select(count(nestedComment.id))
+                    .from(nestedComment)
+                    .where(nestedComment.comment.post.id.eq(post.id)), "nestedCommentCount")
         ))
         .from(post)
         .join(member).on(post.userId.eq(member.id))
@@ -80,14 +111,6 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
             postTypeEq(searchCondition.getType())
         )
     );
-  }
-
-  public List<PostImage> findPostImagesByIds(List<Long> postIds) {
-    return getQueryFactory()
-        .selectFrom(postImage)
-        .where(
-            postImage.post.id.in(postIds)
-        ).fetch();
   }
 
   public Page<PostSearchDto> search(
@@ -102,7 +125,15 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
             post.recommend.as("recommend"),
             member.nickname.as("nickname"),
             post.createdAt.as("createdAt"),
-            post.lastModifiedAt.as("lastModifiedAt")
+            post.lastModifiedAt.as("lastModifiedAt"),
+            ExpressionUtils.as(
+                JPAExpressions.select(count(comment.id))
+                    .from(comment)
+                    .where(comment.post.id.eq(post.id)), "commentCount"),
+            ExpressionUtils.as(
+                JPAExpressions.select(count(nestedComment.id))
+                    .from(nestedComment)
+                    .where(nestedComment.comment.post.id.eq(post.id)), "nestedCommentCount")
         ))
         .from(post)
         .join(member).on(post.userId.eq(member.id))
@@ -111,6 +142,7 @@ public class PostQueryRepository extends Querydsl4RepositorySupport {
         )
     );
   }
+
 
   private BooleanExpression postTypeEq(PostType type) {
     return isEmpty(type) ? null : post.type.eq(type);

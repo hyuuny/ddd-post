@@ -1,8 +1,8 @@
 package com.setge.dddpost.domain.post.domain;
 
-import com.setge.dddpost.domain.comment.application.CommentDto;
 import com.setge.dddpost.domain.comment.application.CommentSearchDto;
 import com.setge.dddpost.domain.comment.infrastructure.CommentQueryRepository;
+import com.setge.dddpost.domain.nestedcomment.application.NestedCommentSearchDto;
 import com.setge.dddpost.domain.nestedcomment.infrastructure.NestedCommentQueryRepository;
 import com.setge.dddpost.domain.post.application.PostDto.DetailedSearchCondition;
 import com.setge.dddpost.domain.post.application.PostDto.SearchCondition;
@@ -30,43 +30,38 @@ public class PostDomainService {
   private final NestedCommentQueryRepository nestedCommentQueryRepository;
 
 
-  public Post findById(final Long id) {
+  public Post getPost(final Long id) {
     return postRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", id)
     );
   }
 
-  public void saveRecommendPost(final Long recommendPostId, final Boolean recommend) {
-    Post existingPost = postRepository.findById(recommendPostId).orElseThrow(
-        () -> new HttpStatusMessageException(
-            HttpStatus.BAD_REQUEST, "post.notFound", recommendPostId));
-    existingPost.changeRecommendPost(recommend);
-  }
-
-  public PostSearchDto findPostById(final Long id) {
+  public PostSearchDto getPostSearchDto(final Long id) {
     return postQueryRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", id)
     );
   }
 
-  public List<Response> findPostImagesById(final Long id) {
+  public List<CommentSearchDto> getComments(final Long id) {
+    return commentQueryRepository.findSearchDtosById(id);
+  }
+
+  public List<NestedCommentSearchDto> getNestedComments(List<Long> commentIds) {
+    return nestedCommentQueryRepository.findSearchDtosById(commentIds);
+  }
+
+  public List<Response> getPostImages(final Long id) {
     return postQueryRepository.findPostImagesById(id).stream()
         .map(PostImageDto.Response::new)
         .sorted((a, b) -> a.getPriority().compareTo(b.getPriority()))
         .collect(Collectors.toList());
   }
 
-  public Page<PostSearchDto> search(
-      DetailedSearchCondition searchCondition,
-      Pageable pageable
-  ) {
+  public Page<PostSearchDto> search(DetailedSearchCondition searchCondition, Pageable pageable) {
     return postQueryRepository.search(searchCondition, pageable);
   }
 
-  public Page<PostSearchDto> search(
-      SearchCondition searchCondition,
-      Pageable pageable
-  ) {
+  public Page<PostSearchDto> search(SearchCondition searchCondition, Pageable pageable) {
     return postQueryRepository.search(searchCondition, pageable);
   }
 
