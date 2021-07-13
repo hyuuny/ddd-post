@@ -15,13 +15,13 @@ public class NestedCommentDomainService {
   private final NestedCommentQueryRepository nestedCommentQueryRepository;
 
 
-  public NestedComment findById(final Long id) {
+  public NestedComment getNestedComment(final Long id) {
     return nestedCommentRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "nestedComment.notFound", id)
     );
   }
 
-  public NestedCommentSearchDto findSearchDtoById(final Long id) {
+  public NestedCommentSearchDto getNestedCommentSearchDto(final Long id) {
     return nestedCommentQueryRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "nestedComment.notFound", id)
     );

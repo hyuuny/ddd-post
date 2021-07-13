@@ -18,24 +18,24 @@ public class MemberDomainService {
   private final MemberQueryRepository memberQueryRepository;
 
 
-  public void emailDuplicateCheck(String email) {
+  public void emailCheck(String email) {
     memberRepository.findByEmail(email).ifPresent(member -> {
       throw new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "member.email.duplicated");
     });
   }
 
-  public void nicknameDuplicateCheck(String nickname) {
+  public void nicknameCheck(String nickname) {
     memberRepository.findByNickname(nickname).ifPresent(member -> {
       throw new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "member.nickname.duplicated");
     });
   }
 
-  public Member findById(Long id) {
+  public Member getMember(Long id) {
     return memberRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "member.notFound", id));
   }
 
-  public Page<MemberSearchDto> findAllMembers(Pageable pageable) {
+  public Page<MemberSearchDto> getMembers(Pageable pageable) {
     return memberQueryRepository.findAllMembers(pageable);
   }
 

@@ -39,29 +39,24 @@ public class MemberServiceImpl implements MemberService {
 
   @Override
   public void checkEmail(CheckEmail dto) {
-    domainService.emailDuplicateCheck(dto.getEmail());
+    domainService.emailCheck(dto.getEmail());
   }
 
   @Override
   public void checkNickname(CheckNickname dto) {
-    domainService.nicknameDuplicateCheck(dto.getNickname());
+    domainService.nicknameCheck(dto.getNickname());
   }
 
   @Override
   public Response getMember(final Long id) {
-    Member member = domainService.findById(id);
-    return toResponse(member);
-  }
-
-  private Response toResponse(Member member) {
-    return new Response(member);
+    return toResponse(domainService.getMember(id));
   }
 
   @Transactional
   @Override
   public Response updateMember(final Long id, Update dto) {
-    Member existingMember = domainService.findById(id);
-    domainService.nicknameDuplicateCheck(dto.getNickname());
+    Member existingMember = domainService.getMember(id);
+    domainService.nicknameCheck(dto.getNickname());
     dto.update(existingMember);
     return getMember(id);
   }
@@ -69,13 +64,13 @@ public class MemberServiceImpl implements MemberService {
   @Transactional
   @Override
   public void leaveMember(final Long id) {
-    Member member = domainService.findById(id);
+    Member member = domainService.getMember(id);
     member.leaveMember();
   }
 
   @Override
   public Page<Response> findAllMembers(Pageable pageable) {
-    Page<MemberSearchDto> members = domainService.findAllMembers(pageable);
+    Page<MemberSearchDto> members = domainService.getMembers(pageable);
     return new PageImpl<>(toResponses(members), pageable, members.getTotalElements());
   }
 
@@ -83,6 +78,10 @@ public class MemberServiceImpl implements MemberService {
   public Page<Response> retrieveMember(DetailedSearchCondition searchCondition, Pageable pageable) {
     Page<MemberSearchDto> search = domainService.search(searchCondition, pageable);
     return new PageImpl<>(toResponses(search), pageable, search.getTotalElements());
+  }
+
+  private Response toResponse(Member member) {
+    return new Response(member);
   }
 
   private List<Response> toResponses(Page<MemberSearchDto> members) {

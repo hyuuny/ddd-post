@@ -14,7 +14,7 @@ public class SimpleCommentPostMapper implements CommentPostMapper {
   private final PostRepository postRepository;
 
   @Override
-  public Post findPostById(Long postId) {
+  public Post getPost(final Long postId) {
     return postRepository.findById(postId).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "post.notFound", postId));
   }

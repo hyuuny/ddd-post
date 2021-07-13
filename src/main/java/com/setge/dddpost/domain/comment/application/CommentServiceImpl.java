@@ -8,7 +8,6 @@ import com.setge.dddpost.domain.comment.domain.Comment;
 import com.setge.dddpost.domain.comment.domain.CommentDomainService;
 import com.setge.dddpost.domain.comment.domain.CommentPostMapper;
 import com.setge.dddpost.domain.comment.domain.CommentRepository;
-import com.setge.dddpost.domain.post.domain.Post;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -32,22 +31,21 @@ public class CommentServiceImpl implements CommentService {
   @Override
   public Response createComment(final Long postId, Create dto) {
     Comment comment = dto.toEntity();
-    Post post = commentPostMapper.findPostById(postId);
-    comment.setPost(post);
+    comment.setPost(commentPostMapper.getPost(postId));
     return getComment(commentRepository.save(comment).getId());
   }
 
   @Override
   public Response getComment(final Long id) {
-    CommentSearchDto comment = domainService.findSearchDtoById(id);
-    comment.addNestedComments(domainService.findSearchNestedCommentById(id));
+    CommentSearchDto comment = domainService.getCommentSearchDto(id);
+    comment.addNestedComments(domainService.getComments(id));
     return new Response(comment);
   }
 
   @Transactional
   @Override
   public Response updateComment(final Long id, Update dto) {
-    Comment existingComment = domainService.findById(id);
+    Comment existingComment = domainService.getComment(id);
     dto.update(existingComment);
     return getComment(id);
   }

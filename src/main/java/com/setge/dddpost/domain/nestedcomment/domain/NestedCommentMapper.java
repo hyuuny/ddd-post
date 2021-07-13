@@ -4,6 +4,6 @@ import com.setge.dddpost.domain.comment.domain.Comment;
 
 public interface NestedCommentMapper {
 
-  Comment findCommentById(final Long id);
+  Comment getComment(final Long id);
 
 }

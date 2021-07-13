@@ -14,7 +14,7 @@ public class SimpleNestedCommentMapper implements NestedCommentMapper{
   private final CommentRepository commentRepository;
 
   @Override
-  public Comment findCommentById(Long id) {
+  public Comment getComment(final Long id) {
     return commentRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "cooment.notFound", id)
     );

@@ -22,17 +22,17 @@ public class CommentDomainService {
   private final CommentQueryRepository commentQueryRepository;
 
 
-  public Comment findById(Long id) {
+  public Comment getComment(Long id) {
     return commentRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "comment.notFound", id));
   }
 
-  public CommentSearchDto findSearchDtoById(Long id) {
+  public CommentSearchDto getCommentSearchDto(Long id) {
     return commentQueryRepository.findById(id).orElseThrow(
         () -> new HttpStatusMessageException(HttpStatus.BAD_REQUEST, "comment.notFound", id));
   }
 
-  public List<Response> findSearchNestedCommentById(Long id) {
+  public List<Response> getComments(Long id) {
     return commentQueryRepository.findNestedCommentsById(id).stream()
         .map(NestedCommentDto.Response::new)
         .collect(Collectors.toList());

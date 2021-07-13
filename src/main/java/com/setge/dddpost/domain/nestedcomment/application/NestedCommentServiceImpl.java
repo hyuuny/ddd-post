@@ -1,6 +1,5 @@
 package com.setge.dddpost.domain.nestedcomment.application;
 
-import com.setge.dddpost.domain.comment.domain.Comment;
 import com.setge.dddpost.domain.nestedcomment.application.NestedCommentDto.Create;
 import com.setge.dddpost.domain.nestedcomment.application.NestedCommentDto.Response;
 import com.setge.dddpost.domain.nestedcomment.application.NestedCommentDto.Update;
@@ -26,21 +25,19 @@ public class NestedCommentServiceImpl implements NestedCommentService {
   @Override
   public Response createNestedComment(final Long commentId, Create dto) {
     NestedComment nestedComment = dto.toEntity();
-    Comment comment = nestedCommentMapper.findCommentById(commentId);
-    nestedComment.setComment(comment);
+    nestedComment.setComment(nestedCommentMapper.getComment(commentId));
     return getNestedComment(nestedCommentRepository.save(nestedComment).getId());
   }
 
   @Override
   public Response getNestedComment(final Long id) {
-    NestedCommentSearchDto nestedComment = domainService.findSearchDtoById(id);
-    return new Response(nestedComment);
+    return new Response(domainService.getNestedCommentSearchDto(id));
   }
 
   @Transactional
   @Override
   public Response updateNestedComment(final Long id, Update dto) {
-    NestedComment existingNestedComment = domainService.findById(id);
+    NestedComment existingNestedComment = domainService.getNestedComment(id);
     dto.update(existingNestedComment);
     return getNestedComment(id);
   }

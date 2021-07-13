@@ -5,6 +5,6 @@ import java.util.List;
 
 public interface CommentPostMapper {
 
-  Post findPostById(final Long postId);
+  Post getPost(final Long postId);
 
 }
